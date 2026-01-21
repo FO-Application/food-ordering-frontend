@@ -1,0 +1,15 @@
+{
+    "name": "food-ordering-root",
+    "private": true,
+    "version": "1.0.0",
+    "scripts": {
+        "install:all": "npm install && npm install --prefix apps/customer && npm install --prefix apps/admin && npm install --prefix apps/partner",
+        "dev": "concurrently \"npm run dev --prefix apps/customer\" \"npm run dev --prefix apps/admin\" \"npm run dev --prefix apps/partner\"",
+        "dev:customer": "npm run dev --prefix apps/customer",
+        "dev:admin": "npm run dev --prefix apps/admin",
+        "dev:partner": "npm run dev --prefix apps/partner"
+    },
+    "devDependencies": {
+        "concurrently": "^9.1.2"
+    }
+}

@@ -1,0 +1,131 @@
+/* InfoSection.css */
+.info-section {
+    padding: var(--spacing-16) 0;
+    background: var(--white);
+}
+
+.info-container {
+    max-width: 960px;
+    /* Narrower for readability */
+    margin: 0 auto;
+    padding: 0 var(--spacing-6);
+}
+
+.info-block {
+    margin-bottom: var(--spacing-16);
+}
+
+.info-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1c1c1c;
+    margin-bottom: var(--spacing-8);
+}
+
+/* Why GrabFood List */
+.benefit-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+}
+
+.benefit-item {
+    display: flex;
+    gap: var(--spacing-3);
+    align-items: flex-start;
+}
+
+.benefit-icon {
+    color: var(--secondary-green);
+    font-size: 18px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.benefit-content {
+    font-size: 16px;
+    line-height: var(--line-height-relaxed);
+    color: var(--gray-700);
+}
+
+.benefit-title {
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-right: 4px;
+}
+
+/* FAQ Block */
+.faq-block-content {
+    font-size: 14px;
+    line-height: var(--line-height-relaxed);
+    color: var(--gray-600);
+    margin-bottom: var(--spacing-6);
+}
+
+.faq-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1c1c1c;
+    margin-bottom: var(--spacing-3);
+}
+
+.btn-read-more {
+    display: block;
+    width: 100%;
+    padding: 12px 24px;
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: center;
+}
+
+.btn-read-more:hover {
+    border-color: var(--secondary-green);
+    color: var(--secondary-green);
+    text-decoration: none;
+}
+
+.faq-item {
+    margin-bottom: var(--spacing-6);
+}
+
+.faq-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--gray-600);
+}
+
+.faq-steps {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 12px;
+}
+
+.faq-steps li {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--gray-600);
+    margin-bottom: 8px;
+    padding-left: 0;
+}
+
+.faq-expanded {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
