@@ -1,0 +1,156 @@
+/* Footer - GrabFood Style */
+.footer {
+    background: #00B14F;
+    color: #fff;
+}
+
+.footer-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Logo Row */
+.footer-logo-row {
+    padding: 32px 0 24px;
+}
+
+.footer-logo-text {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Divider */
+.footer-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Main Grid */
+.footer-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 32px;
+    padding: 24px 0 32px;
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.footer-social-col {
+    align-items: flex-end;
+}
+
+/* Links */
+.footer-link {
+    display: inline-block;
+    color: #fff;
+    font-size: 14px;
+    text-decoration: none;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+}
+
+.footer-link:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+/* Social Icons */
+.footer-social {
+    display: flex;
+    gap: 12px;
+}
+
+.footer-social-link {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.footer-social-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.footer-social-link svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Bottom Section */
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+/* App Badges */
+.footer-app-badges {
+    display: flex;
+    gap: 12px;
+}
+
+.footer-app-badges a {
+    display: block;
+}
+
+.footer-app-badges img {
+    height: 40px;
+    display: block;
+}
+
+/* Copyright */
+.footer-copyright {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.footer-bottom-link {
+    color: #fff;
+    text-decoration: none;
+}
+
+.footer-bottom-link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .footer-main {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .footer-social-col {
+        align-items: flex-start;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-main {
+        grid-template-columns: 1fr;
+    }
+}

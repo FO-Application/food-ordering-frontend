@@ -1,0 +1,86 @@
+/* AppPromo.css */
+.app-promo {
+    padding: 64px 0;
+    background: #f7f7f7;
+}
+
+.promo-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.promo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+}
+
+.promo-card {
+    background: transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 32px;
+}
+
+.promo-image-wrapper {
+    width: 180px;
+    height: 140px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.promo-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.promo-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1c1c1c;
+    margin-bottom: 12px;
+}
+
+.promo-card-desc {
+    font-size: 14px;
+    color: #676767;
+    max-width: 320px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+}
+
+.promo-store-btns {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.store-btn-img {
+    height: 40px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.store-btn-img:hover {
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .promo-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .promo-card {
+        padding: 32px 24px;
+    }
+}
