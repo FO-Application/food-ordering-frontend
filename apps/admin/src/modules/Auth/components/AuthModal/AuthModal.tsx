@@ -11,7 +11,7 @@ interface AuthModalProps {
     onLoginSuccess?: () => void; // Callback after successful login
 }
 
-type AuthStep = 'login' | 'signup' | 'otp-verification' | 'forgot-password' | 'reset-password';
+type AuthStep = 'login' | 'signup' | 'otp-verification' | 'forgot-password' | 'otp-verify-reset' | 'reset-password';
 
 const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
     const { t } = useTranslation();
@@ -45,10 +45,12 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
 
     // Forgot/Reset password state
     const [forgotEmail, setForgotEmail] = useState('');
+    const [resetOtpCode, setResetOtpCode] = useState('');
+    const [verifiedOtp, setVerifiedOtp] = useState(''); // OTP đã xác thực thành công
     const [resetData, setResetData] = useState({
         email: '',
         newPassword: '',
-        otp: ''
+        confirmPassword: ''
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -300,13 +302,43 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
             await authService.forgotPassword(forgotEmail);
             setSuccessMessage(t('auth.otpSent') || 'Mã OTP đã được gửi đến email của bạn.');
             setResetData(prev => ({ ...prev, email: forgotEmail }));
+            setResetOtpCode('');
             setTimeout(() => {
-                setCurrentStep('reset-password');
+                setCurrentStep('otp-verify-reset');
                 clearMessages();
             }, 1500);
         } catch (err: any) {
             console.error('[AuthModal] Forgot password failed:', err);
             const message = err.response?.data?.message || 'Email không tồn tại trong hệ thống';
+            setErrorMessage(message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ==================== VERIFY OTP FOR RESET PASSWORD ====================
+
+    const handleVerifyResetOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        clearMessages();
+
+        try {
+            const response = await authService.verifyForgotPasswordOtp(resetData.email, resetOtpCode);
+
+            if (response.result === true) {
+                setSuccessMessage('OTP hợp lệ! Vui lòng nhập mật khẩu mới.');
+                setVerifiedOtp(resetOtpCode); // Lưu OTP đã xác thực
+                setTimeout(() => {
+                    setCurrentStep('reset-password');
+                    clearMessages();
+                }, 1500);
+            } else {
+                setErrorMessage('Mã OTP không đúng hoặc đã hết hạn.');
+            }
+        } catch (err: any) {
+            console.error('[AuthModal] Verify OTP failed:', err);
+            const message = err.response?.data?.message || 'Mã OTP không đúng hoặc đã hết hạn';
             setErrorMessage(message);
         } finally {
             setLoading(false);
@@ -321,16 +353,29 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
             return;
         }
 
+        if (resetData.newPassword !== resetData.confirmPassword) {
+            setErrorMessage('Mật khẩu xác nhận không khớp!');
+            return;
+        }
+
         setLoading(true);
         clearMessages();
 
         try {
-            await authService.resetPassword(resetData);
+            // Gửi kèm OTP đã xác thực để backend validate lại
+            await authService.resetPassword({
+                email: resetData.email,
+                newPassword: resetData.newPassword,
+                otp: verifiedOtp
+            });
             setSuccessMessage(t('auth.resetSuccess') || 'Đổi mật khẩu thành công! Bạn có thể đăng nhập.');
             setTimeout(() => {
                 setCurrentStep('login');
                 setEmail(resetData.email);
                 clearMessages();
+                // Reset states
+                setVerifiedOtp('');
+                setResetOtpCode('');
             }, 1500);
         } catch (err: any) {
             console.error('[AuthModal] Reset password failed:', err);
@@ -663,28 +708,68 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
         </>
     );
 
-    const renderResetPassword = () => (
+    const renderOtpVerifyReset = () => (
         <>
-            <h2 className="auth-title">{t('auth.resetPasswordTitle')}</h2>
-            <p className="auth-subtitle">{t('auth.resetPasswordSubtitle')} <strong>{resetData.email}</strong></p>
+            <h2 className="auth-title">{t('auth.verifyOtpTitle') || 'Xác thực OTP'}</h2>
+            <p className="auth-subtitle">
+                {t('auth.verifyOtpSubtitle') || 'Nhập mã OTP đã được gửi đến email'} <strong>{resetData.email}</strong>
+            </p>
 
-            <form className="auth-form" onSubmit={handleResetPassword}>
+            <form className="auth-form" onSubmit={handleVerifyResetOtp}>
                 <div className="auth-input-group">
-                    <label htmlFor="reset-otp" className="auth-label">{t('auth.enterOtp')}</label>
+                    <label htmlFor="reset-otp" className="auth-label">{t('auth.enterOtp') || 'Mã OTP'}</label>
                     <input
                         type="text"
                         id="reset-otp"
-                        className="auth-input"
+                        className="auth-input otp-input"
                         placeholder="123456"
-                        value={resetData.otp}
-                        onChange={(e) => setResetData(prev => ({ ...prev, otp: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                        value={resetOtpCode}
+                        onChange={(e) => setResetOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                         maxLength={6}
                         disabled={loading}
+                        autoComplete="one-time-code"
                     />
                 </div>
 
+                <button type="submit" className="auth-submit-btn" disabled={loading || resetOtpCode.length !== 6}>
+                    {loading ? <span className="auth-loading-spinner"></span> : t('auth.verifyOtp') || 'Xác thực OTP'}
+                </button>
+            </form>
+
+            <div className="auth-resend">
+                <span>{t('auth.otpNotReceived') || 'Không nhận được mã?'} </span>
+                <button
+                    type="button"
+                    className="auth-toggle-btn"
+                    onClick={handleResendResetOtp}
+                    disabled={loading}
+                >
+                    {t('auth.resendOtp') || 'Gửi lại OTP'}
+                </button>
+            </div>
+
+            <div className="auth-toggle">
+                <button
+                    type="button"
+                    className="auth-toggle-btn"
+                    onClick={() => { setCurrentStep('forgot-password'); clearMessages(); }}
+                >
+                    ← {t('auth.backToEmail') || 'Quay lại nhập email'}
+                </button>
+            </div>
+        </>
+    );
+
+    const renderResetPassword = () => (
+        <>
+            <h2 className="auth-title">{t('auth.resetPasswordTitle') || 'Đặt mật khẩu mới'}</h2>
+            <p className="auth-subtitle">
+                {t('auth.resetPasswordSubtitle') || 'Nhập mật khẩu mới cho tài khoản'} <strong>{resetData.email}</strong>
+            </p>
+
+            <form className="auth-form" onSubmit={handleResetPassword}>
                 <div className="auth-input-group">
-                    <label htmlFor="new-password" className="auth-label">{t('auth.newPassword')}</label>
+                    <label htmlFor="new-password" className="auth-label">{t('auth.newPassword') || 'Mật khẩu mới'}</label>
                     <input
                         type="password"
                         id="new-password"
@@ -697,22 +782,23 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
                     <span className="auth-hint">8-16 ký tự, có chữ hoa, thường, số và ký tự đặc biệt</span>
                 </div>
 
+                <div className="auth-input-group">
+                    <label htmlFor="confirm-password" className="auth-label">{t('auth.confirmPassword') || 'Xác nhận mật khẩu'}</label>
+                    <input
+                        type="password"
+                        id="confirm-password"
+                        className="auth-input"
+                        placeholder="StrongP@ss01"
+                        value={resetData.confirmPassword}
+                        onChange={(e) => setResetData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        disabled={loading}
+                    />
+                </div>
+
                 <button type="submit" className="auth-submit-btn" disabled={loading}>
-                    {loading ? <span className="auth-loading-spinner"></span> : t('auth.changePassword')}
+                    {loading ? <span className="auth-loading-spinner"></span> : t('auth.changePassword') || 'Đổi mật khẩu'}
                 </button>
             </form>
-
-            <div className="auth-resend">
-                <span>{t('auth.otpNotReceived')} </span>
-                <button
-                    type="button"
-                    className="auth-toggle-btn"
-                    onClick={handleResendResetOtp}
-                    disabled={loading}
-                >
-                    {t('auth.resendOtp')}
-                </button>
-            </div>
 
             <div className="auth-toggle">
                 <button
@@ -736,6 +822,8 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
                 return renderOtpVerification();
             case 'forgot-password':
                 return renderForgotPassword();
+            case 'otp-verify-reset':
+                return renderOtpVerifyReset();
             case 'reset-password':
                 return renderResetPassword();
             default:

@@ -2,7 +2,7 @@ import api from '../utils/axiosConfig';
 
 // User response from /user/me
 export interface UserProfile {
-    id: string;
+    id: number;
     email: string;
     firstName: string;
     lastName: string;
@@ -24,19 +24,16 @@ const userService = {
      * Get current authenticated user info
      * Endpoint: GET /user/me
      */
-    getCurrentUser: async (): Promise<APIResponse<UserProfile>> => {
+    getMyInfo: async (): Promise<APIResponse<UserProfile>> => {
         const response = await api.get<APIResponse<UserProfile>>('/user/me');
         return response.data;
     },
 
     /**
-     * Update user profile
+     * Update user profile by ID
+     * Endpoint: PUT /user/{id}
      */
-    updateProfile: async (data: Partial<UserProfile>): Promise<APIResponse<UserProfile>> => {
-        const response = await api.patch<APIResponse<UserProfile>>('/user/me', data);
-        return response.data;
-    },
-    updateUser: async (id: string, data: Partial<UserProfile>): Promise<APIResponse<UserProfile>> => {
+    updateUser: async (id: number, data: Partial<UserProfile>): Promise<APIResponse<UserProfile>> => {
         const response = await api.put<APIResponse<UserProfile>>(`/user/${id}`, data);
         return response.data;
     },

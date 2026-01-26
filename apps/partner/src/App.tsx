@@ -1,20 +1,18 @@
-import './styles/global.css';
 import { Routes, Route } from 'react-router-dom';
-import Header from './modules/Core/components/Header/Header';
-import Footer from './modules/Core/components/Footer/Footer';
-import HomePage from './modules/Home/pages/HomePage';
-import Cuisines from './modules/Cuisines/pages/Cuisines/Cuisines';
+import PartnerLoginPage from './pages/PartnerLoginPage/PartnerLoginPage';
+import PartnerDashboard from './pages/PartnerDashboard/PartnerDashboard';
+import RestaurantSelectionPage from './pages/RestaurantSelection/RestaurantSelectionPage';
+import ProfilePage from './pages/ProfilePage/ProfilePage';
 
 function App() {
   return (
-    <div className="app">
-      <Header />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/cuisines/:slug" element={<Cuisines />} />
-      </Routes>
-      <Footer />
-    </div>
+    <Routes>
+      <Route path="/" element={<PartnerLoginPage />} />
+      <Route path="/login" element={<PartnerLoginPage />} />
+      <Route path="/dashboard" element={<PartnerDashboard />} />
+      <Route path="/restaurant-selection" element={<RestaurantSelectionPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+    </Routes>
   );
 }
 

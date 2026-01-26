@@ -39,7 +39,16 @@
 }
 
 .how-it-works-title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin-right: var(--spacing-3);
+    color: var(--primary-orange);
+}
+
+.how-it-works-title-icon svg {
+    width: 28px;
+    height: 28px;
 }
 
 .how-it-works-subtitle {
@@ -102,16 +111,21 @@
 }
 
 .step-icon {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     margin: 0 auto var(--spacing-4);
     background: var(--gray-50);
     border-radius: var(--radius-2xl);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 48px;
     transition: all var(--transition-normal);
+    color: var(--primary-orange);
+}
+
+.step-icon svg {
+    width: 36px;
+    height: 36px;
 }
 
 .step-card:hover .step-icon {
@@ -245,10 +259,14 @@
     }
 
     .step-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 28px;
+        width: 52px;
+        height: 52px;
         margin: 0 0 var(--spacing-3) 0;
+    }
+
+    .step-icon svg {
+        width: 24px;
+        height: 24px;
     }
 
     .step-description {

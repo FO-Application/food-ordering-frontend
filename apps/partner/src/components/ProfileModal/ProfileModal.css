@@ -1,0 +1,355 @@
+/* ===== PROFILE MODAL ===== */
+.pm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.pm-container {
+    display: flex;
+    width: 90%;
+    max-width: 900px;
+    height: 85vh;
+    max-height: 600px;
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ===== LEFT PANEL ===== */
+.pm-left {
+    width: 40%;
+    background-image: url('https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pm-left-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0, 170, 91, 0.9) 0%, rgba(0, 122, 65, 0.95) 100%);
+}
+
+.pm-left-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 40px 30px;
+    color: white;
+}
+
+.pm-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 32px;
+    opacity: 0.9;
+}
+
+.pm-logo .accent {
+    color: #a7f3d0;
+}
+
+.pm-avatar {
+    width: 90px;
+    height: 90px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 auto 16px;
+}
+
+.pm-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.pm-role {
+    font-size: 0.85rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 14px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.pm-tagline {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    line-height: 1.5;
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+/* ===== RIGHT PANEL ===== */
+.pm-right {
+    flex: 1;
+    padding: 32px;
+    overflow-y: auto;
+    position: relative;
+    background: #fff;
+}
+
+.pm-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.pm-close:hover {
+    background: #e5e7eb;
+}
+
+.pm-close svg {
+    width: 18px;
+    height: 18px;
+    color: #6b7280;
+}
+
+.pm-form-header {
+    margin-bottom: 24px;
+}
+
+.pm-form-header h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 4px 0;
+}
+
+.pm-form-header p {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* ===== MESSAGE ===== */
+.pm-message {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.pm-message.success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.pm-message.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* ===== FORM ===== */
+.pm-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.pm-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.pm-field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pm-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.pm-field input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+    transition: border-color 0.2s;
+    background: #fff;
+    font-family: inherit;
+}
+
+.pm-field input:focus {
+    outline: none;
+    border-color: #00aa5b;
+}
+
+.pm-field input.disabled {
+    background: #f9fafb;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.pm-value {
+    font-size: 0.95rem;
+    color: #1a1a1a;
+    font-weight: 500;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+/* ===== ACTIONS ===== */
+.pm-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.pm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.pm-btn.primary {
+    background: linear-gradient(135deg, #00aa5b 0%, #007a41 100%);
+    color: white;
+    flex: 1;
+}
+
+.pm-btn.primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 170, 91, 0.3);
+}
+
+.pm-btn.primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.pm-btn.primary svg {
+    width: 18px;
+    height: 18px;
+}
+
+.pm-btn.secondary {
+    background: transparent;
+    color: #6b7280;
+    border: 2px solid #e5e7eb;
+    flex: 1;
+}
+
+.pm-btn.secondary:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.pm-btn.full {
+    width: 100%;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .pm-container {
+        flex-direction: column;
+        height: 90vh;
+        max-height: none;
+    }
+
+    .pm-left {
+        width: 100%;
+        height: 180px;
+        flex-shrink: 0;
+    }
+
+    .pm-left-content {
+        padding: 20px;
+    }
+
+    .pm-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+
+    .pm-name {
+        font-size: 1.1rem;
+    }
+
+    .pm-tagline {
+        display: none;
+    }
+
+    .pm-right {
+        padding: 24px;
+    }
+
+    .pm-row {
+        grid-template-columns: 1fr;
+    }
+}

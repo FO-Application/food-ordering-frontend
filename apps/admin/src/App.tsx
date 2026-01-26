@@ -1,20 +1,14 @@
-import './styles/global.css';
 import { Routes, Route } from 'react-router-dom';
-import Header from './modules/Core/components/Header/Header';
-import Footer from './modules/Core/components/Footer/Footer';
-import HomePage from './modules/Home/pages/HomePage';
-import Cuisines from './modules/Cuisines/pages/Cuisines/Cuisines';
+import AdminLoginPage from './pages/AdminLoginPage/AdminLoginPage';
 
 function App() {
   return (
-    <div className="app">
-      <Header />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/cuisines/:slug" element={<Cuisines />} />
-      </Routes>
-      <Footer />
-    </div>
+    <Routes>
+      <Route path="/" element={<AdminLoginPage />} />
+      <Route path="/login" element={<AdminLoginPage />} />
+      {/* Dashboard and other admin routes will be added here */}
+      <Route path="/dashboard" element={<div>Admin Dashboard - Coming Soon</div>} />
+    </Routes>
   );
 }
 

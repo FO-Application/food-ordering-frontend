@@ -166,7 +166,19 @@ const authService = {
     },
 
     /**
-     * Đặt lại mật khẩu mới (Bước 2)
+     * Xác thực OTP cho quên mật khẩu (Bước 2)
+     * Trả về boolean: true nếu OTP hợp lệ, false nếu không hợp lệ
+     */
+    verifyForgotPasswordOtp: async (email: string, otpCode: string): Promise<APIResponse<boolean>> => {
+        const response = await api.post<APIResponse<boolean>>(
+            `/auth/verify-otp?email=${encodeURIComponent(email)}&otpCode=${encodeURIComponent(otpCode)}`
+        );
+        return response.data;
+    },
+
+    /**
+     * Đặt lại mật khẩu mới (Bước 3)
+     * Gửi kèm OTP đã xác thực để backend validate lại
      */
     resetPassword: async (data: NewPasswordRequest): Promise<APIResponse<void>> => {
         const response = await api.post<APIResponse<void>>('/auth/reset-password', data);
