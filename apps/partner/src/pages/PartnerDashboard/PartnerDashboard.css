@@ -1,0 +1,245 @@
+/* ===== PARTNER DASHBOARD STYLES ===== */
+
+/* ===== WELCOME SECTION ===== */
+.dashboard-welcome {
+    position: relative;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 180px;
+    /* Compact height */
+    margin-bottom: 32px;
+    color: var(--fastbite-text-primary);
+    border: 1px solid var(--fastbite-border);
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    /* Subtle shadow for refinement */
+}
+
+.welcome-content {
+    position: relative;
+    z-index: 10;
+    width: 55%;
+    padding: 32px 40px;
+}
+
+.welcome-content h2 {
+    font-size: 1.5rem;
+    /* Slightly smaller for compactness */
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: #111827;
+}
+
+.welcome-content p {
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.5;
+    max-width: 480px;
+}
+
+.welcome-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.welcome-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    /* Center focus generally works better for interiors */
+}
+
+/* White gradient overlay: Longer, smoother fade for sophistication */
+.welcome-image::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #ffffff 45%, rgba(255, 255, 255, 0.9) 60%, rgba(255, 255, 255, 0) 100%);
+}
+
+/* ===== STATS GRID ===== */
+.dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid var(--fastbite-border);
+    transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stat-card-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.stat-card-icon.orders {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.stat-card-icon.revenue {
+    background: rgba(0, 170, 91, 0.1);
+    color: #00aa5b;
+}
+
+.stat-card-icon.rating {
+    background: rgba(251, 191, 36, 0.1);
+    color: #f59e0b;
+}
+
+.stat-card-icon.products {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+
+.stat-card-info {
+    flex: 1;
+}
+
+.stat-card-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--fastbite-text-primary);
+    margin: 0 0 4px 0;
+}
+
+.stat-card-label {
+    font-size: 0.85rem;
+    color: var(--fastbite-text-secondary);
+    margin: 0;
+}
+
+/* ===== DASHBOARD SECTION ===== */
+.dashboard-section {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--fastbite-border);
+    overflow: hidden;
+}
+
+.section-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--fastbite-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fastbite-text-primary);
+    margin: 0;
+}
+
+.view-all-link {
+    font-size: 0.85rem;
+    color: var(--fastbite-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.view-all-link:hover {
+    color: var(--fastbite-primary-dark);
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--fastbite-text-muted);
+}
+
+.empty-state svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--fastbite-text-secondary);
+    margin: 0 0 4px 0;
+}
+
+.empty-state span {
+    font-size: 0.85rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1200px) {
+    .dashboard-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-welcome {
+        padding: 24px;
+        flex-direction: column;
+    }
+
+    .welcome-content {
+        width: 100%;
+        text-align: center;
+    }
+
+    .welcome-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .welcome-image {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0.1;
+        /* Fade out image on mobile for text readability */
+    }
+
+    .welcome-image::after {
+        display: none;
+    }
+
+    .dashboard-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .stat-card {
+        padding: 20px;
+    }
+}

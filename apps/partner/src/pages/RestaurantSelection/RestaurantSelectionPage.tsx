@@ -6,6 +6,7 @@ import userService, { type UserProfile } from '../../services/userService';
 import ProfileModal from '../../components/ProfileModal/ProfileModal';
 import './RestaurantSelectionPage.css';
 import CreateRestaurantModal from '../../components/CreateRestaurantModal/CreateRestaurantModal';
+import { SecuredImage } from '../../components/SecuredImage/SecuredImage';
 
 const RestaurantSelectionPage: React.FC = () => {
     const navigate = useNavigate();
@@ -182,11 +183,21 @@ const RestaurantSelectionPage: React.FC = () => {
                                     className="branch-card restaurant-card"
                                     onClick={() => handleSelectRestaurant(restaurant.id)}
                                 >
-                                    <div
-                                        className="card-thumbnail"
-                                        style={{ backgroundImage: `url(${restaurant.imageFileUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400'})` }}
-                                    >
-                                        <span className={`status-badge ${restaurant.isActive ? 'active' : 'inactive'}`}>
+                                    <div className="card-thumbnail">
+                                        <SecuredImage
+                                            src={restaurant.imageFileUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400'}
+                                            alt={restaurant.name}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                zIndex: 0
+                                            }}
+                                        />
+                                        <span className={`status-badge ${restaurant.isActive ? 'active' : 'inactive'}`} style={{ zIndex: 1 }}>
                                             {restaurant.isActive ? 'Đang hoạt động' : 'Tạm ngưng'}
                                         </span>
                                     </div>

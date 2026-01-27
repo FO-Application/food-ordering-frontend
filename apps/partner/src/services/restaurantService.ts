@@ -57,6 +57,31 @@ const restaurantService = {
     getCuisines: async (): Promise<any> => {
         const response = await api.get('/cuisine');
         return response.data;
+    },
+
+    getRestaurantById: async (id: number): Promise<any> => {
+        const response = await api.get(`/restaurant/${id}`);
+        return response.data;
+    },
+
+    updateRestaurant: async (id: number, data: Partial<RestaurantRequest>, imageFile?: File): Promise<any> => {
+        const formData = new FormData();
+
+        // Append JSON data as a Blob with application/json type
+        const jsonBlob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        formData.append('data', jsonBlob);
+
+        // Append image if provided
+        if (imageFile) {
+            formData.append('image', imageFile);
+        }
+
+        return api.put(`/restaurant/${id}`, formData, {
+            headers: {
+                'Content-Type': undefined
+            },
+            withCredentials: true,
+        }).then(res => res.data);
     }
 };
 

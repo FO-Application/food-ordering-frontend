@@ -118,23 +118,34 @@
     border-top: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.stat-item {
-    text-align: center;
+.branding-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    transition: transform 0.2s ease;
 }
 
-.stat-number {
-    font-size: 36px;
+.branding-stat-item:hover {
+    transform: translateY(-2px);
+}
+
+.branding-stat-number {
+    font-size: 32px;
     font-weight: 800;
-    display: block;
     margin-bottom: 4px;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.stat-label {
+.branding-stat-label {
     font-size: 13px;
-    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.9);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* ===================================
