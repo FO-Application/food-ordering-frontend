@@ -21,10 +21,21 @@ const RestaurantSelectionPage: React.FC = () => {
     const loadRestaurants = async () => {
         try {
             const userData = await userService.getMyInfo();
-            if (userData?.result) setUser(userData.result);
-
-            const restData = await restaurantService.getAllRestaurants();
-            if (restData?.result?.content) setRestaurants(restData.result.content);
+            console.log('UserData:', userData);
+            if (userData?.result) {
+                setUser(userData.result);
+                if (userData.result.id) {
+                    console.log('Fetching restaurants for owner:', userData.result.id);
+                    const restData = await restaurantService.getRestaurantsByOwner(Number(userData.result.id));
+                    console.log('RestData:', restData);
+                    if (restData?.result?.content) {
+                        setRestaurants(restData.result.content);
+                        console.log('Restaurants set:', restData.result.content);
+                    } else {
+                        console.warn('No content in restData');
+                    }
+                }
+            }
         } catch (error) {
             console.error('Failed to load data', error);
         } finally {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import restaurantService, { type RestaurantResponse } from '../../services/restaurantService';
 import userService, { type UserProfile } from '../../services/userService';
@@ -6,6 +7,7 @@ import { SecuredImage } from '../../components/SecuredImage/SecuredImage';
 import './RestaurantProfilePage.css';
 
 const RestaurantProfilePage: React.FC = () => {
+    const { t } = useTranslation();
     const [restaurant, setRestaurant] = useState<RestaurantResponse | null>(null);
     const [user, setUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
@@ -21,7 +23,9 @@ const RestaurantProfilePage: React.FC = () => {
         address: '',
         phone: '',
         description: '',
-        isActive: true
+        isActive: true,
+        openTime: '',
+        closeTime: ''
     });
 
     useEffect(() => {
@@ -42,7 +46,9 @@ const RestaurantProfilePage: React.FC = () => {
                         address: restData.result.address || '',
                         phone: restData.result.phone || '',
                         description: restData.result.description || '',
-                        isActive: restData.result.isActive ?? true
+                        isActive: restData.result.isActive ?? true,
+                        openTime: restData.result.openTime || '',
+                        closeTime: restData.result.closeTime || ''
                     });
                 }
             }
@@ -93,7 +99,9 @@ const RestaurantProfilePage: React.FC = () => {
                 address: formData.address,
                 phone: formData.phone,
                 description: formData.description,
-                isActive: formData.isActive
+                isActive: formData.isActive,
+                openTime: formData.openTime,
+                closeTime: formData.closeTime
             };
 
             const result = await restaurantService.updateRestaurant(
@@ -110,7 +118,7 @@ const RestaurantProfilePage: React.FC = () => {
             }
         } catch (error) {
             console.error('Failed to update restaurant:', error);
-            alert('Có lỗi xảy ra khi cập nhật. Vui lòng thử lại.');
+            alert(t('common.error'));
         } finally {
             setSaving(false);
         }
@@ -123,7 +131,9 @@ const RestaurantProfilePage: React.FC = () => {
                 address: restaurant.address || '',
                 phone: restaurant.phone || '',
                 description: restaurant.description || '',
-                isActive: restaurant.isActive ?? true
+                isActive: restaurant.isActive ?? true,
+                openTime: restaurant.openTime || '',
+                closeTime: restaurant.closeTime || ''
             });
         }
         setNewImage(null);
@@ -138,38 +148,38 @@ const RestaurantProfilePage: React.FC = () => {
     };
 
     const getOwnerName = () => {
-        if (!user) return 'Chủ quán';
+        if (!user) return t('profile.owner');
         if (user.firstName && user.lastName) return `${user.lastName} ${user.firstName}`;
-        return user.email?.split('@')[0] || 'Chủ quán';
+        return user.email?.split('@')[0] || t('profile.owner');
     };
 
     if (loading) {
         return (
-            <DashboardLayout pageTitle="Hồ sơ nhà hàng">
+            <DashboardLayout pageTitle={t('profile.title')}>
                 <div className="profile-loading">
                     <div className="loader"></div>
-                    <p>Đang tải thông tin...</p>
+                    <p>{t('common.loading')}</p>
                 </div>
             </DashboardLayout>
         );
     }
 
     return (
-        <DashboardLayout pageTitle="Hồ sơ nhà hàng">
+        <DashboardLayout pageTitle={t('profile.title')}>
             {/* Page Header */}
             <div className="profile-page-header">
                 <div>
-                    <h2>Thông tin nhà hàng</h2>
-                    <p>Quản lý thông tin chi tiết và hình ảnh của nhà hàng</p>
+                    <h2>{t('profile.restaurantInfo')}</h2>
+                    <p>{t('profile.infoDesc')}</p>
                 </div>
                 <div className="profile-actions">
                     {isEditing ? (
                         <>
                             <button className="btn-secondary" onClick={handleCancel} disabled={saving}>
-                                Hủy
+                                {t('common.cancel')}
                             </button>
                             <button className="btn-primary" onClick={handleSave} disabled={saving}>
-                                {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                                {saving ? t('common.loading') : t('profile.save')}
                             </button>
                         </>
                     ) : (
@@ -178,7 +188,7 @@ const RestaurantProfilePage: React.FC = () => {
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                             </svg>
-                            Chỉnh sửa
+                            {t('common.edit')}
                         </button>
                     )}
                 </div>
@@ -194,7 +204,7 @@ const RestaurantProfilePage: React.FC = () => {
                                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                                 <polyline points="9 22 9 12 15 12 15 22" />
                             </svg>
-                            Chi tiết nhà hàng
+                            {t('profile.details')}
                         </h3>
                     </div>
                     <div className="card-body">
@@ -211,12 +221,12 @@ const RestaurantProfilePage: React.FC = () => {
                                     />
                                 ) : (
                                     <div className="restaurant-image" style={{ background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <span>Chưa có ảnh</span>
+                                        <span>{t('profile.noImage')}</span>
                                     </div>
                                 )}
                                 {isEditing && (
                                     <div className="image-upload-overlay">
-                                        <span>📷 Thay đổi ảnh</span>
+                                        <span>📷 {t('profile.changeImage')}</span>
                                     </div>
                                 )}
                             </div>
@@ -232,29 +242,29 @@ const RestaurantProfilePage: React.FC = () => {
                         {/* Form */}
                         <div className="form-grid">
                             <div className="form-group full-width">
-                                <label>Tên nhà hàng</label>
+                                <label>{t('profile.restaurantName')}</label>
                                 <input
                                     type="text"
                                     name="name"
                                     value={formData.name}
                                     onChange={handleInputChange}
                                     disabled={!isEditing}
-                                    placeholder="Nhập tên nhà hàng"
+                                    placeholder={t('profile.restaurantName')}
                                 />
                             </div>
                             <div className="form-group full-width">
-                                <label>Địa chỉ</label>
+                                <label>{t('profile.address')}</label>
                                 <input
                                     type="text"
                                     name="address"
                                     value={formData.address}
                                     onChange={handleInputChange}
                                     disabled={!isEditing}
-                                    placeholder="Nhập địa chỉ"
+                                    placeholder={t('profile.address')}
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Số điện thoại</label>
+                                <label>{t('profile.phone')}</label>
                                 <input
                                     type="tel"
                                     name="phone"
@@ -273,14 +283,34 @@ const RestaurantProfilePage: React.FC = () => {
                                     placeholder="restaurant-slug"
                                 />
                             </div>
+                            <div className="form-group">
+                                <label>{t('profile.openTime')}</label>
+                                <input
+                                    type="time"
+                                    name="openTime"
+                                    value={formData.openTime}
+                                    onChange={handleInputChange}
+                                    disabled={!isEditing}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>{t('profile.closeTime')}</label>
+                                <input
+                                    type="time"
+                                    name="closeTime"
+                                    value={formData.closeTime}
+                                    onChange={handleInputChange}
+                                    disabled={!isEditing}
+                                />
+                            </div>
                             <div className="form-group full-width">
-                                <label>Mô tả</label>
+                                <label>{t('profile.description')}</label>
                                 <textarea
                                     name="description"
                                     value={formData.description}
                                     onChange={handleInputChange}
                                     disabled={!isEditing}
-                                    placeholder="Mô tả ngắn về nhà hàng..."
+                                    placeholder={t('profile.description') + '...'}
                                     rows={4}
                                 />
                             </div>
@@ -298,7 +328,7 @@ const RestaurantProfilePage: React.FC = () => {
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                                     <circle cx="12" cy="7" r="4" />
                                 </svg>
-                                Chủ quán
+                                {t('profile.owner')}
                             </h3>
                         </div>
                         <div className="card-body">
@@ -321,18 +351,18 @@ const RestaurantProfilePage: React.FC = () => {
                                     <line x1="12" y1="20" x2="12" y2="4" />
                                     <line x1="6" y1="20" x2="6" y2="14" />
                                 </svg>
-                                Thống kê
+                                {t('profile.stats')}
                             </h3>
                         </div>
                         <div className="card-body">
                             <div className="stats-grid">
                                 <div className="stat-item">
                                     <div className="stat-value">{restaurant?.ratingAverage?.toFixed(1) || '0.0'}</div>
-                                    <div className="stat-label">Đánh giá TB</div>
+                                    <div className="stat-label">{t('dashboard.avgRating')}</div>
                                 </div>
                                 <div className="stat-item">
                                     <div className="stat-value">{restaurant?.reviewCount || 0}</div>
-                                    <div className="stat-label">Lượt đánh giá</div>
+                                    <div className="stat-label">{t('profile.ratingCount')}</div>
                                 </div>
                             </div>
 
@@ -341,7 +371,7 @@ const RestaurantProfilePage: React.FC = () => {
                                 <div className="status-info">
                                     <div className={`status-indicator ${formData.isActive ? '' : 'inactive'}`}></div>
                                     <span className="status-text">
-                                        {formData.isActive ? 'Đang hoạt động' : 'Tạm ngưng'}
+                                        {formData.isActive ? t('profile.active') : t('profile.inactive')}
                                     </span>
                                 </div>
                                 {isEditing && (

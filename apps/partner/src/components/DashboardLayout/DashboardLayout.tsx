@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './DashboardLayout.css';
 import restaurantService, { type RestaurantResponse } from '../../services/restaurantService';
 import userService, { type UserProfile } from '../../services/userService';
 import authService from '../../services/authService';
+import notificationService, { type NotificationMessage } from '../../services/notificationService';
+import orderService from '../../services/orderService';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -13,13 +16,130 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }) => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [restaurant, setRestaurant] = useState<RestaurantResponse | null>(null);
     const [user, setUser] = useState<UserProfile | null>(null);
 
+    // Notification State
+    const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const unreadCount = notifications.filter(n => !n.read).length;
+
+    // New Orders Count State
+    const [newOrdersCount, setNewOrdersCount] = useState<number>(0);
+
     useEffect(() => {
         loadData();
+
+        // Subscribe to notifications
+        const unsubscribe = notificationService.onMessage((message) => {
+            setNotifications(prev => [message, ...prev]);
+        });
+
+        // Simulate a welcome notification after 2 seconds
+        const timer = setTimeout(() => {
+            notificationService.simulateNotification(
+                'Chào mừng đối tác!',
+                'Chào mừng bạn đến với hệ thống quản lý FastBite.'
+            );
+        }, 2000);
+
+        return () => {
+            unsubscribe();
+            clearTimeout(timer);
+        };
     }, []);
+
+    // Register Topic Subscription when Restaurant & User are loaded
+    useEffect(() => {
+        const registerTopic = async () => {
+            if (restaurant && user && user.id) {
+                try {
+                    const token = await notificationService.getFcmToken();
+                    if (token) {
+                        await notificationService.registerToken(
+                            user.id.toString(),
+                            token,
+                            'MERCHANT',
+                            restaurant.id
+                        );
+                        console.log(`[Dashboard] Subscribed to topic merchant-orders-${restaurant.id}`);
+                    }
+                } catch (error) {
+                    console.warn('[Dashboard] Failed to subscribe to topic:', error);
+                }
+            }
+        };
+
+        registerTopic();
+    }, [restaurant, user]);
+
+    // Fetch pending orders count (CREATED + PAID)
+    useEffect(() => {
+        const fetchNewOrdersCount = async () => {
+            const restaurantId = localStorage.getItem('currentRestaurantId');
+            if (!restaurantId) return;
+
+            try {
+                // Fetch CREATED orders
+                const createdOrders = await orderService.getMerchantOrders(
+                    Number(restaurantId),
+                    'CREATED',
+                    0,
+                    100 // Get all pending orders
+                );
+
+                // Fetch PAID orders
+                const paidOrders = await orderService.getMerchantOrders(
+                    Number(restaurantId),
+                    'PAID',
+                    0,
+                    100
+                );
+
+                const createdCount = createdOrders?.result?.totalElements || 0;
+                const paidCount = paidOrders?.result?.totalElements || 0;
+                const totalNew = createdCount + paidCount;
+
+                setNewOrdersCount(totalNew);
+            } catch (error) {
+                console.warn('[DashboardLayout] Failed to fetch new orders count:', error);
+            }
+        };
+
+        // Initial fetch
+        fetchNewOrdersCount();
+
+        // Auto-refresh every 30 seconds
+        const interval = setInterval(fetchNewOrdersCount, 30000);
+
+        return () => clearInterval(interval);
+    }, [restaurant]);
+
+    const toggleNotifications = () => {
+        setShowNotifications(!showNotifications);
+    };
+
+    const markAsRead = (id: string) => {
+        setNotifications(prev => prev.map(n =>
+            n.id === id ? { ...n, read: true } : n
+        ));
+    };
+
+    const markAllAsRead = () => {
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    };
+
+    const formatTime = (date: Date) => {
+        const now = new Date();
+        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+        if (diffInSeconds < 60) return 'Vừa xong';
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
+        return date.toLocaleDateString('vi-VN');
+    };
 
     const loadData = async () => {
         try {
@@ -59,24 +179,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
 
     const navItems = [
         {
-            section: 'Tổng quan',
+            section: t('sidebar.dashboard'),
             items: [
                 { path: '/dashboard', icon: 'home', label: 'Dashboard', badge: null as string | null },
-                { path: '/dashboard/profile', icon: 'store', label: 'Hồ sơ nhà hàng', badge: null as string | null },
+                { path: '/dashboard/profile', icon: 'store', label: t('sidebar.profile'), badge: null as string | null },
             ]
         },
         {
-            section: 'Quản lý',
+            section: t('common.edit') === 'Edit' ? 'Manage' : 'Quản lý',
             items: [
-                { path: '/dashboard/menu', icon: 'menu', label: 'Thực đơn', badge: null as string | null },
-                { path: '/dashboard/orders', icon: 'orders', label: 'Đơn hàng', badge: '3' as string | null },
+                { path: '/dashboard/menu', icon: 'menu', label: t('sidebar.menu'), badge: null as string | null },
+                { path: '/dashboard/orders', icon: 'orders', label: t('sidebar.orders'), badge: newOrdersCount > 0 ? newOrdersCount.toString() : null },
             ]
         },
         {
-            section: 'Khác',
+            section: t('common.edit') === 'Edit' ? 'Other' : 'Khác',
             items: [
-                { path: '/dashboard/reviews', icon: 'star', label: 'Đánh giá', badge: null as string | null },
-                { path: '/dashboard/settings', icon: 'settings', label: 'Cài đặt', badge: null as string | null },
+                { path: '/dashboard/reviews', icon: 'star', label: t('sidebar.reviews'), badge: null as string | null },
+                { path: '/dashboard/settings', icon: 'settings', label: t('sidebar.settings'), badge: null as string | null },
             ]
         }
     ];
@@ -100,9 +220,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
             case 'menu':
                 return (
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="3" y1="12" x2="21" y2="12" />
-                        <line x1="3" y1="6" x2="21" y2="6" />
-                        <line x1="3" y1="18" x2="21" y2="18" />
+                        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+                        <path d="M7 2v20" />
+                        <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" />
                     </svg>
                 );
             case 'orders':
@@ -154,7 +274,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
                         <div className="sidebar-restaurant">
                             <p className="sidebar-restaurant-name">{restaurant.name}</p>
                             <span className={`sidebar-restaurant-status ${restaurant.isActive ? '' : 'inactive'}`}>
-                                {restaurant.isActive ? 'Đang hoạt động' : 'Tạm ngưng'}
+                                {restaurant.isActive ? t('profile.active') : t('profile.inactive')}
                             </span>
                         </div>
                     )}
@@ -185,7 +305,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
                         <div className="sidebar-user-avatar">{getInitial()}</div>
                         <div className="sidebar-user-info">
                             <p className="sidebar-user-name">{getUserDisplayName()}</p>
-                            <p className="sidebar-user-role">Chủ quán</p>
+                            <p className="sidebar-user-role">{t('profile.owner')}</p>
                         </div>
                         <button className="sidebar-logout" onClick={handleLogout} title="Đăng xuất">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -213,18 +333,65 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
                     </div>
 
                     <div className="dashboard-header-right">
-                        <button className="header-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                            </svg>
-                            <span className="notification-dot"></span>
-                        </button>
+                        <div className="notification-wrapper">
+                            <button
+                                className={`header-btn ${showNotifications ? 'active' : ''}`}
+                                onClick={toggleNotifications}
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                </svg>
+                                {unreadCount > 0 && <span className="notification-dot"></span>}
+                            </button>
+
+                            {/* Notification Dropdown */}
+                            {showNotifications && (
+                                <div className="notification-dropdown">
+                                    <div className="notification-header">
+                                        <h3>{t('dashboard.notifications')}</h3>
+                                        {unreadCount > 0 && (
+                                            <button className="mark-read-btn" onClick={markAllAsRead}>
+                                                {t('dashboard.markAsRead')}
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="notification-list">
+                                        {notifications.length === 0 ? (
+                                            <div className="notification-empty">
+                                                <p>{t('dashboard.noNotifications')}</p>
+                                            </div>
+                                        ) : (
+                                            notifications.map(notification => (
+                                                <div
+                                                    key={notification.id}
+                                                    className={`notification-item ${notification.read ? 'read' : 'unread'}`}
+                                                    onClick={() => markAsRead(notification.id)}
+                                                >
+                                                    <div className="notification-icon">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                                        </svg>
+                                                    </div>
+                                                    <div className="notification-content">
+                                                        <p className="notification-title">{notification.title}</p>
+                                                        <p className="notification-body">{notification.body}</p>
+                                                        <span className="notification-time">{formatTime(notification.receivedAt)}</span>
+                                                    </div>
+                                                    {!notification.read && <span className="unread-indicator"></span>}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <Link to="/restaurant-selection" className="back-to-selection">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M19 12H5M12 19l-7-7 7-7" />
                             </svg>
-                            <span>Đổi chi nhánh</span>
+                            <span>{t('dashboard.switchBranch')}</span>
                         </Link>
                     </div>
                 </header>

@@ -4,6 +4,8 @@ import api from '../utils/axiosConfig';
 export interface RestaurantResponse {
     id: number;
     name: string;
+    ownerId: number;
+
     slug: string;
     address: string;
     latitude: number;
@@ -61,6 +63,11 @@ const restaurantService = {
 
     getRestaurantById: async (id: number): Promise<any> => {
         const response = await api.get(`/restaurant/${id}`);
+        return response.data;
+    },
+
+    getRestaurantsByOwner: async (ownerId: number, page = 0, size = 100): Promise<any> => {
+        const response = await api.get(`/restaurant/owner/${ownerId}?page=${page}&size=${size}`);
         return response.data;
     },
 

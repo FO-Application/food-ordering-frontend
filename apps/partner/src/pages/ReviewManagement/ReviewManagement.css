@@ -1,0 +1,284 @@
+/* ===== REVIEW MANAGEMENT PAGE ===== */
+.review-management-page {
+    padding: 0;
+}
+
+/* ===== REVIEW STATS ===== */
+.review-stats {
+    display: flex;
+    gap: 40px;
+    padding: 24px;
+    background: #f9fafb;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    border: 1px solid #e5e7eb;
+}
+
+.stat-main {
+    text-align: center;
+    min-width: 120px;
+}
+
+.stat-rating {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1;
+}
+
+.stat-stars {
+    margin: 8px 0;
+}
+
+.stat-total {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.stat-distribution {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dist-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.15s ease;
+}
+
+.dist-row:hover {
+    background: #e5e7eb;
+}
+
+.dist-row.active {
+    background: #dbeafe;
+}
+
+.dist-star {
+    width: 40px;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.dist-bar {
+    flex: 1;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dist-fill {
+    height: 100%;
+    background: #f59e0b;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.dist-count {
+    width: 30px;
+    text-align: right;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* ===== STARS ===== */
+.star {
+    font-size: 1.1rem;
+    color: #e5e7eb;
+}
+
+.star.filled {
+    color: #f59e0b;
+}
+
+.star.half {
+    color: #f59e0b;
+    opacity: 0.6;
+}
+
+.star.empty {
+    color: #e5e7eb;
+}
+
+/* ===== FILTER INDICATOR ===== */
+.filter-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: #dbeafe;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.filter-indicator span {
+    font-size: 0.875rem;
+    color: #1e40af;
+}
+
+.filter-indicator button {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-size: 0.875rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.filter-indicator button:hover {
+    color: #1d4ed8;
+}
+
+/* ===== REVIEWS LIST ===== */
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.review-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.reviewer-info {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.reviewer-avatar {
+    width: 40px;
+    height: 40px;
+    background: #e5e7eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: #111827;
+    font-size: 0.9rem;
+}
+
+.review-date {
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+.review-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rating-number {
+    font-weight: 600;
+    color: #f59e0b;
+    font-size: 0.9rem;
+}
+
+.review-content {
+    font-size: 0.9rem;
+    color: #374151;
+    line-height: 1.6;
+    padding-top: 8px;
+    border-top: 1px solid #f3f4f6;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: #6b7280;
+    background: #f9fafb;
+    border-radius: 10px;
+    border: 1px dashed #d1d5db;
+}
+
+.empty-state h4 {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.pagination span {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+/* ===== BUTTONS ===== */
+.btn-secondary {
+    background: #fff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== MANAGEMENT HEADER ===== */
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.management-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
+import userService from '../../services/userService';
+import notificationService from '../../services/notificationService';
 import './PartnerLoginPage.css';
 
 const EyeIcon = () => (
@@ -68,6 +70,22 @@ const PartnerLoginPage: React.FC = () => {
                 if (result.role === 'MERCHANT') {
                     console.log('[PartnerLoginPage] Login successful:', message);
                     localStorage.setItem('accessToken', result.accessToken);
+
+                    // Register Notification Token
+                    try {
+                        const userInfoFn = await userService.getMyInfo();
+                        if (userInfoFn.result && userInfoFn.result.id) {
+                            const fcmToken = await notificationService.getFcmToken();
+                            if (fcmToken) {
+                                await notificationService.registerToken(userInfoFn.result.id.toString(), fcmToken, 'MERCHANT');
+                                console.log('[PartnerLoginPage] Notification token registered');
+                            }
+                        }
+                    } catch (notifError) {
+                        console.warn('[PartnerLoginPage] Failed to register notification token:', notifError);
+                        // Continue login even if notification registration fails
+                    }
+
                     navigate('/restaurant-selection');
                 } else {
                     setError('Tài khoản của bạn không phải là tài khoản Đối tác.');
