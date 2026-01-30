@@ -1,0 +1,389 @@
+.restaurant-detail-page {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding-bottom: 60px;
+}
+
+.restaurant-detail-hero {
+    min-height: 480px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    margin-top: -60px;
+    /* Pull up behind transparent header if needed */
+}
+
+.restaurant-detail-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.8) 100%);
+    z-index: 1;
+}
+
+.restaurant-detail-info {
+    position: relative;
+    z-index: 2;
+    padding: 0 24px 40px;
+    padding-top: 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    color: white;
+}
+
+.breadcrumbs-hero {
+    font-size: 13px;
+    opacity: 0.8;
+    margin-bottom: 12px;
+}
+
+.breadcrumbs-hero a {
+    color: white;
+    text-decoration: none;
+}
+
+.breadcrumbs-hero a:hover {
+    text-decoration: underline;
+}
+
+.restaurant-detail-info h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    text-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+}
+
+.restaurant-address {
+    font-size: 1.1rem;
+    opacity: 0.95;
+    margin-bottom: 16px;
+    max-width: 700px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.restaurant-meta-badges {
+    display: flex;
+    gap: 12px;
+}
+
+.restaurant-meta-badges span {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.rating-badge {
+    color: #ffd700;
+    /* Gold for stars */
+    background: rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Delivery Address Display */
+.restaurant-delivery-address {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    max-width: fit-content;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.restaurant-delivery-address svg {
+    flex-shrink: 0;
+    color: #00b14f;
+}
+
+.restaurant-delivery-address span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px;
+}
+
+/* Content Area */
+.restaurant-detail-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    position: relative;
+    z-index: 3;
+}
+
+/* Category Navigation Bar - Grab Food Style */
+.category-nav-wrapper {
+    background: #ffffff;
+    border-bottom: 1px solid #e8e8e8;
+    position: sticky;
+    top: 60px;
+    z-index: 100;
+}
+
+.category-nav-bar {
+    display: flex;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.nav-scroll-btn {
+    flex-shrink: 0;
+    width: 40px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+}
+
+.nav-scroll-btn:hover {
+    color: #00b14f;
+}
+
+.category-tabs {
+    display: flex;
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.category-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.category-tab {
+    flex-shrink: 0;
+    padding: 14px 24px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    margin-bottom: -1px;
+}
+
+.category-tab:hover {
+    color: #00b14f;
+}
+
+.category-tab.active {
+    color: #00b14f;
+    border-bottom-color: #00b14f;
+    font-weight: 600;
+}
+
+/* Empty Menu State - Simple Design */
+.menu-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+}
+
+.empty-state-image {
+    width: 180px;
+    height: auto;
+    margin-bottom: 24px;
+    opacity: 0.9;
+}
+
+.empty-state-text {
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.6;
+    max-width: 400px;
+    margin: 0;
+}
+
+/* Menu Layout */
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.menu-section {
+    background: transparent;
+    border-radius: 0;
+    padding: 24px 0;
+    box-shadow: none;
+    border-bottom: 1px solid #eee;
+}
+
+.menu-category-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+@media (max-width: 768px) {
+    .menu-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .restaurant-detail-hero {
+        height: 280px;
+    }
+
+    .restaurant-detail-info h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Product Card */
+.product-card {
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s;
+}
+
+.product-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #00b14f;
+}
+
+.product-info {
+    flex: 1;
+    padding-right: 16px;
+}
+
+.product-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1c1c1c;
+    margin-bottom: 6px;
+}
+
+.product-desc {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-price {
+    font-weight: 700;
+    color: #00b14f;
+    font-size: 1.1rem;
+}
+
+.product-image-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.add-btn {
+    position: absolute;
+    bottom: -8px;
+    right: -8px;
+    background: #00b14f;
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 177, 79, 0.4);
+    transition: transform 0.2s;
+}
+
+.add-btn:hover {
+    transform: scale(1.1);
+    background: #009944;
+}
+
+/* States */
+.restaurant-detail-loading,
+.restaurant-not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    font-size: 1.1rem;
+    color: #555;
+    padding-top: 100px;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #00b14f;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.back-link {
+    margin-top: 16px;
+    color: #00b14f;
+    text-decoration: none;
+    font-weight: 600;
+}

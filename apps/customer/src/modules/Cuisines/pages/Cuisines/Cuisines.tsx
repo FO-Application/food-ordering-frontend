@@ -1,109 +1,113 @@
 import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import './Cuisines.css';
+import restaurantService, { type RestaurantResponse } from '../../../../services/restaurantService';
+import { useLocation } from '../../../../contexts/LocationContext';
 
-interface Restaurant {
-    id: number;
-    name: string;
-    image: string;
-    rating: number;
-    duration: string;
-    distance: string;
-    cuisine: string;
-    promo?: string;
-    discount?: string;
-}
-
-// Mock data
-const MOCK_RESTAURANTS: Restaurant[] = [
-    {
-        id: 1,
-        name: 'Cơm Rang, Cơm Đảo, Mỳ Xào Hải Phong - Vân Canh',
-        image: 'https://images.unsplash.com/photo-1603133872878-684f57fa65b6?w=500&q=80',
-        rating: 4.5,
-        duration: '20 phút',
-        distance: '2,5 km',
-        cuisine: 'Cơm Chiên',
-        promo: 'Promo',
-        discount: 'Giảm 15k đơn 0đ'
-    },
-    {
-        id: 2,
-        name: 'Cơm Thố Anh Nguyễn - Phố Nhổn',
-        image: 'https://images.unsplash.com/photo-1598514983318-2f64f8f4796c?w=500&q=80',
-        rating: 4.2,
-        duration: '30 phút',
-        distance: '4,5 km',
-        cuisine: 'Cơm',
-        promo: 'Promo',
-        discount: 'Giảm 20%'
-    },
-    {
-        id: 3,
-        name: 'Nem Nướng Nha Trang Minh Đức - Phố Nhổn',
-        image: 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=500&q=80',
-        rating: 4.7,
-        duration: '30 phút',
-        distance: '5 km',
-        cuisine: 'Bánh Xèo',
-        promo: 'Promo'
-    },
-    {
-        id: 4,
-        name: 'Gà Tươi Mạnh Hoạch - Trịnh Văn Bô',
-        image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500&q=80',
-        rating: 4.8,
-        duration: '15 phút',
-        distance: '1,2 km',
-        cuisine: 'Gà',
-        promo: 'NB'
-    },
-    {
-        id: 5,
-        name: 'Bún Chả Hà Nội - 102 Cầu Diễn',
-        image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500&q=80',
-        rating: 4.6,
-        duration: '25 phút',
-        distance: '3 km',
-        cuisine: 'Bún Chả',
-        discount: 'Freeship'
-    },
-    {
-        id: 6,
-        name: 'Trà Sữa Ding Tea - Hồ Tùng Mậu',
-        image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&q=80',
-        rating: 4.9,
-        duration: '10 phút',
-        distance: '0,5 km',
-        cuisine: 'Trà Sữa',
-        promo: 'Deal Hời'
-    },
-    {
-        id: 7,
-        name: 'Pizza Hut - Lê Đức Thọ',
-        image: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=500&q=80',
-        rating: 4.4,
-        duration: '35 phút',
-        distance: '4 km',
-        cuisine: 'Pizza',
-        discount: 'Mua 1 Tặng 1'
-    },
-    {
-        id: 8,
-        name: 'KFC - Mỹ Đình',
-        image: 'https://images.unsplash.com/photo-1513639776629-9269d0522c38?w=500&q=80',
-        rating: 4.3,
-        duration: '20 phút',
-        distance: '2 km',
-        cuisine: 'Gà Rán'
-    }
-];
 
 const Cuisines = () => {
     const { slug } = useParams<{ slug: string }>();
+    const { location: userLocation } = useLocation();
+    const [restaurants, setRestaurants] = useState<RestaurantResponse[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [filterMode, setFilterMode] = useState<'all' | 'nearby'>('all');
+    const [isHighRating, setIsHighRating] = useState(false);
+    const [gpsLocation, setGpsLocation] = useState<{ lat: number; lon: number } | null>(null);
 
     const displayName = slug
         ? slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
         : 'Món Ngon';
+
+    useEffect(() => {
+        // Get user GPS location on mount for nearby search
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setGpsLocation({
+                    lat: position.coords.latitude,
+                    lon: position.coords.longitude
+                });
+            },
+            (error) => {
+                console.warn("Location access denied, using default or disabling nearby feature", error);
+            }
+        );
+    }, []);
+
+    useEffect(() => {
+        loadRestaurants();
+    }, [slug, filterMode, gpsLocation]);
+
+    const loadRestaurants = async () => {
+        setLoading(true);
+        try {
+            let data: RestaurantResponse[] = [];
+
+            if (filterMode === 'nearby') {
+                if (gpsLocation) {
+                    const res = await restaurantService.getNearbyRestaurants(
+                        gpsLocation.lat,
+                        gpsLocation.lon,
+                        5.0, // 5km radius
+                        slug
+                    );
+                    if (res.result) data = res.result.content;
+                } else {
+                    // Fallback or prompt user if location missing but mode is nearby
+                    // For now, if no location, we might just fetch all but keep mode? 
+                    // Or auto-switch back to all.
+                    if (filterMode === 'nearby') {
+                        console.warn("GPS location not available for nearby search");
+                    }
+                }
+            } else {
+                // Call Get All By Cuisine
+                if (slug) {
+                    const res = await restaurantService.getRestaurantsByCuisine(slug);
+                    if (res.result) data = res.result.content;
+                }
+            }
+            setRestaurants(data);
+        } catch (error) {
+            console.error("Failed to load restaurants", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const toggleHighRating = () => {
+        setIsHighRating(!isHighRating);
+    };
+
+    // Filter displayed restaurants
+    const displayRestaurants = restaurants.filter(r => {
+        if (isHighRating) {
+            return (r.rating || 0) >= 4.0;
+        }
+        return true;
+    });
+
+    const handleNearbyClick = () => {
+        if (filterMode === 'nearby') {
+            setFilterMode('all');
+        } else {
+            if (!gpsLocation) {
+                alert("Vui lòng cho phép truy cập vị trí để sử dụng tính năng này");
+                // Try to request again
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        setGpsLocation({
+                            lat: position.coords.latitude,
+                            lon: position.coords.longitude
+                        });
+                        setFilterMode('nearby');
+                    },
+                    (error) => alert("Không thể lấy vị trí của bạn: " + error.message)
+                );
+            } else {
+                setFilterMode('nearby');
+            }
+        }
+    };
 
     return (
         <div className="cuisines-page">
@@ -117,47 +121,92 @@ const Cuisines = () => {
                         <span className="breadcrumb-current">Ẩm thực</span>
                     </div>
                     <h1 className="cuisine-title">Ưu đãi {displayName} ở khu vực của bạn</h1>
+                    {userLocation?.address && (
+                        <div className="cuisine-delivery-address">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                <circle cx="12" cy="10" r="3" />
+                            </svg>
+                            <span>Giao đến: {userLocation.address}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
             <main className="cuisines-container">
                 <div className="cuisine-filters">
-                    <button className="filter-btn active">Gần tôi</button>
-                    <button className="filter-btn">Đánh giá tốt</button>
-                    <button className="filter-btn">Giao nhanh</button>
-                    <button className="filter-btn">Khuyến mãi</button>
+                    <button
+                        className={`filter-btn ${filterMode === 'nearby' ? 'active' : ''}`}
+                        onClick={handleNearbyClick}
+                    >
+                        Gần tôi
+                    </button>
+                    <button
+                        className={`filter-btn ${isHighRating ? 'active' : ''}`}
+                        onClick={toggleHighRating}
+                    >
+                        Đánh giá tốt
+                    </button>
+                    {/* Removed "Giao nhanh" and "Khuyến mãi" as requested */}
                 </div>
 
-                <div className="restaurant-list">
-                    {MOCK_RESTAURANTS.map((restaurant) => (
-                        <Link to={`/restaurant/${restaurant.id}`} key={restaurant.id} className="restaurant-card">
-                            <div className="restaurant-image-wrapper">
-                                <img src={restaurant.image} alt={restaurant.name} className="restaurant-image" />
-                                {restaurant.promo && <span className="promo-tag">{restaurant.promo}</span>}
-                            </div>
-                            <div className="restaurant-info">
-                                <h3 className="restaurant-name">{restaurant.name}</h3>
-                                <div className="restaurant-meta">
-                                    <span className="restaurant-cuisine">{restaurant.cuisine}</span>
+                {loading ? (
+                    <div className="skeleton-loading-grid">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+                            <div key={item} className="skeleton-card">
+                                <div className="skeleton-image"></div>
+                                <div className="skeleton-content">
+                                    <div className="skeleton-line title"></div>
+                                    <div className="skeleton-line meta"></div>
+                                    <div className="skeleton-line meta"></div>
                                 </div>
-                                <div className="restaurant-meta">
-                                    <div className="restaurant-rating">
-                                        <span>★</span> {restaurant.rating}
-                                    </div>
-                                    <span className="meta-separator">•</span>
-                                    <span>{restaurant.duration}</span>
-                                    <span className="meta-separator">•</span>
-                                    <span>{restaurant.distance}</span>
-                                </div>
-                                {restaurant.discount && (
-                                    <div className="discount-tag">
-                                        🏷️ {restaurant.discount}
-                                    </div>
-                                )}
                             </div>
-                        </Link>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="restaurant-list">
+                        {displayRestaurants.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-state-icon">🍽️</div>
+                                <p>Không tìm thấy nhà hàng nào phù hợp.</p>
+                            </div>
+                        ) : (
+                            displayRestaurants.map((restaurant) => (
+                                <Link to={`/restaurant/${restaurant.slug}`} key={restaurant.id} className="restaurant-card">
+                                    <div className="restaurant-image-wrapper">
+                                        <img
+                                            src={restaurant.imageFileUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80'}
+                                            alt={restaurant.name}
+                                            className="restaurant-image"
+                                            loading="lazy"
+                                        />
+                                        {!restaurant.isActive && <span className="closed-tag">Đóng cửa</span>}
+                                        {restaurant.distance && <span className="distance-badge">{restaurant.distance.toFixed(1)} km</span>}
+                                    </div>
+                                    <div className="restaurant-info">
+                                        <h3 className="restaurant-name">{restaurant.name}</h3>
+                                        <div className="restaurant-meta">
+                                            <span className="restaurant-cuisine">{displayName}</span>
+                                        </div>
+                                        <div className="restaurant-meta">
+                                            <div className="restaurant-rating">
+                                                <span className="star-icon">★</span>
+                                                <span className="rating-value">{restaurant.rating || 0}</span>
+                                                <span className="rating-count">({restaurant.ratingCount || 0})</span>
+                                            </div>
+                                            {restaurant.deliveryTime && (
+                                                <>
+                                                    <span className="meta-separator">•</span>
+                                                    <span>{restaurant.deliveryTime}</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))
+                        )}
+                    </div>
+                )}
             </main>
         </div>
     );

@@ -11,7 +11,7 @@ export default defineConfig({
       '/api/v1': {
         target: 'https://vanessa-unabsolved-buck.ngrok-free.dev',
         changeOrigin: true,
-        secure: true,
+        secure: false,
         headers: {
           'ngrok-skip-browser-warning': 'true',
         },
@@ -19,3 +19,4 @@ export default defineConfig({
     },
   },
 })
+

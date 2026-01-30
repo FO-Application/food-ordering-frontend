@@ -101,14 +101,135 @@
     background: #dc2626;
 }
 
-/* ===== CATEGORY LIST ===== */
+/* ===== CATEGORY GRID ===== */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.category-card.modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 0;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.category-card.modern:nth-child(2n) {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.category-card.modern:nth-child(3n) {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.category-card.modern:nth-child(4n) {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.category-card.modern:nth-child(5n) {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.category-card.modern:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Category Icon */
+.category-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px 16px;
+}
+
+.category-icon {
+    width: 48px;
+    height: 48px;
+    color: rgba(255, 255, 255, 0.9);
+    stroke-width: 1.5;
+}
+
+/* Category Content */
+.category-content {
+    padding: 0 20px 20px;
+    text-align: center;
+}
+
+.category-name {
+    margin: 0 0 8px 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.category-order {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Category Actions */
+.category-actions {
+    display: flex;
+    gap: 0;
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.action-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: none;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn svg {
+    width: 18px;
+    height: 18px;
+    color: white;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.action-btn:active {
+    transform: scale(0.95);
+}
+
+.edit-btn {
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Old Category List (Fallback) */
 .category-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 16px;
 }
 
-.category-card {
+.category-card:not(.modern) {
     background: white;
     padding: 16px 20px;
     border-radius: 10px;
@@ -119,7 +240,7 @@
     transition: border-color 0.2s ease;
 }
 
-.category-card:hover {
+.category-card:not(.modern):hover {
     border-color: #9ca3af;
 }
 
@@ -143,11 +264,6 @@
     border-radius: 4px;
     font-weight: 500;
     font-size: 0.75rem;
-}
-
-.category-actions {
-    display: flex;
-    gap: 8px;
 }
 
 /* ===== PRODUCT GRID ===== */

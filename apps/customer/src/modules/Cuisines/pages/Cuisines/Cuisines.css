@@ -71,6 +71,35 @@
     margin: 0;
 }
 
+/* Delivery Address Display */
+.cuisine-delivery-address {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    max-width: fit-content;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cuisine-delivery-address svg {
+    flex-shrink: 0;
+    color: #00b14f;
+}
+
+.cuisine-delivery-address span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px;
+}
+
 /* Main Container */
 .cuisines-container {
     max-width: 1200px;
@@ -264,4 +293,97 @@
     padding: 6px 10px;
     border-radius: 6px;
     margin-top: 4px;
+}
+
+/* Loading Skeleton */
+@keyframes shimmer {
+    0% {
+        background-position: -468px 0;
+    }
+
+    100% {
+        background-position: 468px 0;
+    }
+}
+
+.skeleton-loading-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    width: 100%;
+}
+
+.skeleton-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 280px;
+}
+
+.skeleton-image {
+    height: 160px;
+    background: #eee;
+    background-image: linear-gradient(to right, #eee 0%, #ddd 20%, #eee 40%, #eee 100%);
+    background-repeat: no-repeat;
+    background-size: 800px 280px;
+    animation-duration: 1.5s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+    animation-name: shimmer;
+    animation-timing-function: linear;
+}
+
+.skeleton-content {
+    padding: 16px;
+}
+
+.skeleton-line {
+    height: 12px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    background: #eee;
+    background-image: linear-gradient(to right, #eee 0%, #ddd 20%, #eee 40%, #eee 100%);
+    background-repeat: no-repeat;
+    background-size: 800px 104px;
+    animation-duration: 1.5s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+    animation-name: shimmer;
+    animation-timing-function: linear;
+}
+
+.skeleton-line.title {
+    height: 20px;
+    width: 70%;
+    margin-bottom: 14px;
+}
+
+.skeleton-line.meta {
+    width: 40%;
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+    grid-column: 1 / -1;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    color: #666;
+    font-size: 16px;
+    margin: 0;
 }

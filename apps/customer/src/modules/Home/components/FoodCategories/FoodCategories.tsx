@@ -1,62 +1,59 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import './FoodCategories.css';
-
-// Using the Java record structure provided by user as interface
-interface CuisineResponse {
-    /** ID loại hình ẩm thực */
-    id: number;
-    /** Tên Cuisine */
-    name: string;
-    /** Slug URL */
-    slug: string;
-    /** Link ảnh (Cloudinary/S3...) */
-    imageFileUrl: string;
-}
+import cuisineService, { type CuisineResponse } from '../../../../services/cuisineService';
 
 const FoodCategories = () => {
     const { t } = useTranslation();
+    const [categories, setCategories] = useState<CuisineResponse[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Mock data based on the CuisineResponse structure - 5 categories only
-    const categories: CuisineResponse[] = [
-        {
-            id: 1,
-            name: 'Mì Ý',
-            slug: 'mi-y',
-            imageFileUrl: 'https://images.unsplash.com/photo-1626844131082-256783844137?w=500&q=80'
-        },
-        {
-            id: 2,
-            name: 'Bánh Mì',
-            slug: 'banh-mi',
-            imageFileUrl: 'https://images.unsplash.com/photo-1549611016-3a70d82b5040?w=500&q=80'
-        },
-        {
-            id: 3,
-            name: 'Gà rán',
-            slug: 'ga-ran',
-            imageFileUrl: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500&q=80'
-        },
-        {
-            id: 4,
-            name: 'Pizza',
-            slug: 'pizza',
-            imageFileUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&q=80'
-        },
-        {
-            id: 5,
-            name: 'Cơm',
-            slug: 'com',
-            imageFileUrl: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500&q=80'
-        }
-    ];
+    useEffect(() => {
+        const fetchCuisines = async () => {
+            try {
+                const response = await cuisineService.getAllCuisines();
+                if (response.result) {
+                    setCategories(response.result);
+                }
+            } catch (error) {
+                console.error('Failed to fetch cuisines:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCuisines();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <section className="categories" id="categories">
+                <div className="categories-container">
+                    <div className="categories-headerSkeleton"></div>
+                    <div className="categories-grid">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                            <div key={n} className="category-card skeleton">
+                                <div className="category-image-wrapper skeleton-box"></div>
+                                <div className="category-name skeleton-text"></div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
+    if (categories.length === 0) {
+        return null;
+    }
 
     return (
         <section className="categories" id="categories">
             <div className="categories-container">
                 <div className="categories-header">
                     <h2 className="categories-title">
-                        {t('categories.title')}
+                        {t('categories.title', 'Có món ngon cho mọi người!')}
                     </h2>
                 </div>
 
@@ -65,7 +62,7 @@ const FoodCategories = () => {
                         <Link to={`/cuisines/${category.slug}`} key={category.id} className="category-card">
                             <div className="category-image-wrapper">
                                 <img
-                                    src={category.imageFileUrl}
+                                    src={category.imageFileUrl || '/placeholder-food.jpg'}
                                     alt={category.name}
                                     className="category-image"
                                     loading="lazy"
