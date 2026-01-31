@@ -1,6 +1,22 @@
 import axiosConfig from '../utils/axiosConfig';
 import type { APIResponse } from './authService';
 
+export interface OptionItemResponse {
+    id: number;
+    name: string;
+    priceAdjustment: number;
+    isAvailable: boolean;
+}
+
+export interface OptionGroupResponse {
+    id: number;
+    name: string;
+    isMandatory: boolean;
+    minSelection: number;
+    maxSelection: number;
+    options?: OptionItemResponse[];
+}
+
 export interface ProductResponse {
     id: number;
     name: string;
@@ -9,6 +25,7 @@ export interface ProductResponse {
     imageUrl?: string;
     isAvailable: boolean;
     categoryId: number;
+    optionGroups?: OptionGroupResponse[];
 }
 
 const productService = {

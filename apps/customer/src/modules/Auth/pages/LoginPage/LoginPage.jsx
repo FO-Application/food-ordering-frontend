@@ -56,9 +56,10 @@ const LoginPage = () => {
             // stored by the browser due to withCredentials: true
             if (response.data) {
                 console.log('[LoginPage] Backend authentication successful:', response.data.message);
+                console.log('[LoginPage] Force reloading to /home...');
 
-                // Navigate to home/dashboard on success
-                navigate('/home');
+                // Force reload using replace to clean history
+                window.location.replace('/home');
             }
         } catch (err) {
             console.error(`[LoginPage] ${providerName} login failed:`, err);

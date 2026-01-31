@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../../../contexts/CartContext';
@@ -10,9 +11,46 @@ interface CartDropdownProps {
 
 const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
     const { t } = useTranslation();
-    const { cart, updateQuantity, removeFromCart, clearCart, getCartTotal, getCartItemCount } = useCart();
+    const { cart, updateQuantity, removeFromCart, removeItems, clearCart, getCartTotal, getCartItemCount } = useCart();
+    const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
 
     const hasItems = cart && cart.items.length > 0;
+    const isSingleItem = hasItems && cart!.items.length === 1;
+
+    // Reset selection when cart closes or changes significantly (optional safety)
+    useEffect(() => {
+        if (!isOpen) setSelectedIndices([]);
+    }, [isOpen]);
+
+    const handleToggleSelect = (index: number) => {
+        setSelectedIndices(prev => {
+            if (prev.includes(index)) {
+                return prev.filter(i => i !== index);
+            } else {
+                return [...prev, index];
+            }
+        });
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (!cart) return;
+        if (checked) {
+            setSelectedIndices(cart.items.map((_, idx) => idx));
+        } else {
+            setSelectedIndices([]);
+        }
+    };
+
+    const handleDeleteSelected = () => {
+        if (selectedIndices.length === 0) return;
+        removeItems(selectedIndices);
+        setSelectedIndices([]);
+    };
+
+    const handleClearCart = () => {
+        clearCart();
+        setSelectedIndices([]);
+    };
 
     return (
         <>
@@ -68,8 +106,18 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
 
                             {/* Cart Items */}
                             <div className="cart-items">
-                                {cart.items.map((item) => (
-                                    <div key={item.productId} className="cart-item">
+                                {cart.items.map((item, index) => (
+                                    <div key={`${item.productId}-${index}`} className="cart-item">
+                                        {!isSingleItem && (
+                                            <div className="cart-item-select">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedIndices.includes(index)}
+                                                    onChange={() => handleToggleSelect(index)}
+                                                    className="cart-checkbox"
+                                                />
+                                            </div>
+                                        )}
                                         <div className="cart-item-image">
                                             {item.productImage ? (
                                                 <img src={item.productImage} alt={item.productName} />
@@ -79,24 +127,53 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
                                         </div>
                                         <div className="cart-item-details">
                                             <h4 className="cart-item-name">{item.productName}</h4>
-                                            <p className="cart-item-price">{item.unitPrice.toLocaleString('vi-VN')} ₫</p>
+                                            {item.selectedOptions && item.selectedOptions.length > 0 && (
+                                                <p className="cart-item-options">
+                                                    {item.selectedOptions.map(opt => opt.name).join(', ')}
+                                                </p>
+                                            )}
+                                            {item.notes && <p className="cart-item-notes">📝 {item.notes}</p>}
+                                            <p className="cart-item-price">
+                                                {(item.totalPrice || item.unitPrice).toLocaleString('vi-VN')} ₫
+                                            </p>
                                         </div>
                                         <div className="cart-item-quantity">
-                                            <button className="qty-btn" onClick={() => updateQuantity(item.productId, item.quantity - 1)}>−</button>
+                                            <button className="qty-btn" onClick={() => updateQuantity(index, item.quantity - 1)}>−</button>
                                             <span className="qty-value">{item.quantity}</span>
-                                            <button className="qty-btn" onClick={() => updateQuantity(item.productId, item.quantity + 1)}>+</button>
+                                            <button className="qty-btn" onClick={() => updateQuantity(index, item.quantity + 1)}>+</button>
                                         </div>
-                                        <button className="cart-item-remove" onClick={() => removeFromCart(item.productId)}>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <line x1="18" y1="6" x2="6" y2="18" />
-                                                <line x1="6" y1="6" x2="18" y2="18" />
-                                            </svg>
-                                        </button>
+                                        {/* Removed X button */}
                                     </div>
                                 ))}
                             </div>
 
-                            <button className="cart-clear-btn" onClick={clearCart}>Xóa giỏ hàng</button>
+                            {/* Action Buttons for Deletion */}
+                            <div className="cart-actions-bar">
+                                {isSingleItem ? (
+                                    <button className="cart-delete-btn full-width" onClick={handleClearCart}>
+                                        Xóa giỏ hàng
+                                    </button>
+                                ) : (
+                                    <div className="cart-bulk-actions">
+                                        <label className="select-all-label">
+                                            <input
+                                                type="checkbox"
+                                                checked={cart.items.length > 0 && selectedIndices.length === cart.items.length}
+                                                onChange={(e) => handleSelectAll(e.target.checked)}
+                                                className="cart-checkbox"
+                                            />
+                                            Chọn tất cả
+                                        </label>
+                                        <button
+                                            className="cart-delete-btn"
+                                            onClick={handleDeleteSelected}
+                                            disabled={selectedIndices.length === 0}
+                                        >
+                                            Xóa ({selectedIndices.length})
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </>
                     )}
                 </div>
@@ -115,5 +192,4 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
         </>
     );
 };
-
 export default CartDropdown;

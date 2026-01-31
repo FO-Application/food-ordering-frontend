@@ -1,12 +1,21 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 
 // Types matching backend OrderItem structure
+export interface CartItemOption {
+    id: number;
+    name: string;
+    price: number;
+}
+
 export interface CartItem {
     productId: number;
     productName: string;
     productImage: string;
     unitPrice: number;
     quantity: number;
+    selectedOptions?: CartItemOption[];
+    notes?: string;
+    totalPrice?: number; // Calculated price (unit + options)
 }
 
 export interface Cart {
@@ -33,9 +42,14 @@ export interface ProductInfo {
 
 interface CartContextType {
     cart: Cart | null;
-    addToCart: (restaurant: RestaurantInfo, product: ProductInfo, quantity?: number) => boolean;
-    removeFromCart: (productId: number) => void;
-    updateQuantity: (productId: number, quantity: number) => void;
+    isCartOpen: boolean;
+    openCart: () => void;
+    closeCart: () => void;
+    toggleCart: () => void;
+    addToCart: (restaurant: RestaurantInfo, product: ProductInfo, quantity?: number, options?: CartItemOption[], notes?: string) => boolean;
+    removeFromCart: (productIndex: number) => void;
+    removeItems: (indices: number[]) => void;
+    updateQuantity: (productIndex: number, quantity: number) => void;
     clearCart: () => void;
     getCartTotal: () => number;
     getCartItemCount: () => number;
@@ -55,6 +69,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         }
     });
 
+    const [isCartOpen, setIsCartOpen] = useState(false);
+
     // Sync to localStorage
     useEffect(() => {
         if (cart && cart.items.length > 0) {
@@ -63,6 +79,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             localStorage.removeItem(CART_STORAGE_KEY);
         }
     }, [cart]);
+
+    const openCart = useCallback(() => setIsCartOpen(true), []);
+    const closeCart = useCallback(() => setIsCartOpen(false), []);
+    const toggleCart = useCallback(() => setIsCartOpen(prev => !prev), []);
 
     const addToCart = useCallback((restaurant: RestaurantInfo, product: ProductInfo, quantity: number = 1): boolean => {
         setCart(prev => {
@@ -119,30 +139,50 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                 }]
             };
         });
+
+        // Auto open cart when adding item
+        setIsCartOpen(true);
         return true;
     }, []);
 
-    const removeFromCart = useCallback((productId: number) => {
+    const removeFromCart = useCallback((itemIndex: number) => {
         setCart(prev => {
             if (!prev) return null;
-            const newItems = prev.items.filter(item => item.productId !== productId);
+            const newItems = [...prev.items];
+            newItems.splice(itemIndex, 1);
             return newItems.length === 0 ? null : { ...prev, items: newItems };
         });
     }, []);
 
-    const updateQuantity = useCallback((productId: number, quantity: number) => {
+    const removeItems = useCallback((indices: number[]) => {
+        setCart(prev => {
+            if (!prev) return null;
+            // Sort indices descending to remove from end first, avoiding index shift issues
+            const sortedIndices = [...indices].sort((a, b) => b - a);
+            const newItems = [...prev.items];
+
+            sortedIndices.forEach(index => {
+                if (index >= 0 && index < newItems.length) {
+                    newItems.splice(index, 1);
+                }
+            });
+
+            return newItems.length === 0 ? null : { ...prev, items: newItems };
+        });
+    }, []);
+
+    const updateQuantity = useCallback((itemIndex: number, quantity: number) => {
         if (quantity <= 0) {
-            removeFromCart(productId);
+            removeFromCart(itemIndex);
             return;
         }
         setCart(prev => {
             if (!prev) return null;
-            return {
-                ...prev,
-                items: prev.items.map(item =>
-                    item.productId === productId ? { ...item, quantity } : item
-                )
-            };
+            const newItems = [...prev.items];
+            if (newItems[itemIndex]) {
+                newItems[itemIndex].quantity = quantity;
+            }
+            return { ...prev, items: newItems };
         });
     }, [removeFromCart]);
 
@@ -153,7 +193,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     const getCartTotal = useCallback((): number => {
         if (!cart) return 0;
-        return cart.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+        return cart.items.reduce((sum, item) => sum + (item.totalPrice || item.unitPrice) * item.quantity, 0);
     }, [cart]);
 
     const getCartItemCount = useCallback((): number => {
@@ -164,8 +204,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return (
         <CartContext.Provider value={{
             cart,
+            isCartOpen,
+            openCart,
+            closeCart,
+            toggleCart,
             addToCart,
             removeFromCart,
+            removeItems,
             updateQuantity,
             clearCart,
             getCartTotal,

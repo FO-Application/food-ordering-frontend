@@ -270,41 +270,86 @@
     font-weight: 600;
 }
 
-.cart-item-remove {
-    width: 28px;
-    height: 28px;
+/* Checkbox Styles */
+.cart-item-select {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
-    border: none;
-    color: #999;
+    padding-right: 12px;
+}
+
+.cart-checkbox {
+    width: 20px;
+    height: 20px;
     cursor: pointer;
-    border-radius: 50%;
-    transition: all 0.2s;
+    accent-color: #00b14f;
 }
 
-.cart-item-remove:hover {
-    background: #fee;
-    color: #f44;
+/* Actions Bar */
+.cart-actions-bar {
+    padding: 12px 20px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
 }
 
-/* Clear Cart Button */
-.cart-clear-btn {
-    margin: 0 20px 16px;
-    padding: 10px;
+.cart-bulk-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.select-all-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cart-delete-btn {
+    padding: 10px 16px;
     background: transparent;
     border: 1px solid #ddd;
-    border-radius: 8px;
     color: #666;
+    border-radius: 8px;
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.cart-clear-btn:hover {
+.cart-delete-btn.full-width {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+}
+
+.cart-delete-btn:hover:not(:disabled) {
     border-color: #f44;
     color: #f44;
+    background: transparent;
+}
+
+.cart-delete-btn:disabled {
+    border-color: #eee;
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.cart-item-options {
+    font-size: 11px;
+    color: #666;
+    margin: 2px 0;
+    line-height: 1.3;
+}
+
+.cart-item-notes {
+    font-size: 11px;
+    color: #888;
+    margin: 2px 0;
+    font-style: italic;
 }
 
 /* Cart Footer */

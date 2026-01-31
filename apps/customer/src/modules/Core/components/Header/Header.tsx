@@ -8,12 +8,14 @@ import { UserProfileModal } from '../UserProfileModal';
 import { clearAllCookies } from '../../../../utils/cookie';
 import userService, { type UserProfile } from '../../../../services/userService';
 import authService from '../../../../services/authService';
+import { useCart } from '../../../../contexts/CartContext';
 
 const Header = () => {
   const { t, i18n } = useTranslation();
+  const { isCartOpen, closeCart, toggleCart, openCart } = useCart();
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
@@ -65,14 +67,6 @@ const Header = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const toggleCart = () => {
-    setIsCartOpen(!isCartOpen);
-  };
-
-  const closeCart = () => {
-    setIsCartOpen(false);
-  };
-
   const openAuth = () => {
     setIsAuthOpen(true);
     setIsMobileMenuOpen(false);
@@ -93,7 +87,8 @@ const Header = () => {
 
   const handleLoginSuccess = () => {
     // Refresh user data after successful login
-    fetchCurrentUser();
+    // Reload page to ensure all data (cuisines, cart, etc.) is fresh
+    window.location.reload();
   };
 
   const handleLogout = async () => {
@@ -124,6 +119,11 @@ const Header = () => {
 
   const toggleLangDropdown = () => {
     setIsLangDropdownOpen(!isLangDropdownOpen);
+  };
+
+  const handleOpenCartFromMenu = () => {
+    openCart();
+    setIsUserMenuOpen(false);
   };
 
   const getUserDisplayName = () => {
@@ -181,7 +181,7 @@ const Header = () => {
                           </svg>
                           {t('header.profile') || 'Tài khoản'}
                         </button>
-                        <button className="user-dropdown-item" onClick={() => {/* Navigate to orders */ }}>
+                        <button className="user-dropdown-item" onClick={handleOpenCartFromMenu}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M6 6h15l-1.5 9h-12L6 6z" />
                             <circle cx="9" cy="20" r="1" />

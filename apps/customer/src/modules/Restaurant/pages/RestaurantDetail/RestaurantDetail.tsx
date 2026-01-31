@@ -6,6 +6,7 @@ import categoryService, { type CategoryResponse } from '../../../../services/cat
 import productService, { type ProductResponse } from '../../../../services/productService';
 import { useLocation } from '../../../../contexts/LocationContext';
 import { useCart } from '../../../../contexts/CartContext';
+import ProductDetailModal from '../../components/ProductDetailModal';
 
 interface MenuSection {
     category: CategoryResponse;
@@ -15,13 +16,18 @@ interface MenuSection {
 const RestaurantDetail = () => {
     const { slug } = useParams<{ slug: string }>();
     const { location: userLocation } = useLocation();
-    const { addToCart } = useCart();
+    // const { addToCart } = useCart(); // addToCart used in Modal now
     const [restaurant, setRestaurant] = useState<RestaurantResponse | null>(null);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [menu, setMenu] = useState<MenuSection[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<ProductResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const openProductModal = (product: ProductResponse) => {
+        setSelectedProduct(product);
+    };
 
     useEffect(() => {
         if (slug) {
@@ -209,7 +215,12 @@ const RestaurantDetail = () => {
                                     ) : (
                                         <div className="menu-grid">
                                             {section.products.map((product) => (
-                                                <div key={product.id} className="product-card">
+                                                <div
+                                                    key={product.id}
+                                                    className="product-card"
+                                                    onClick={() => openProductModal(product)}
+                                                    style={{ cursor: 'pointer' }}
+                                                >
                                                     <div className="product-info">
                                                         <h4 className="product-name">{product.name}</h4>
                                                         <p className="product-desc">{product.description}</p>
@@ -223,10 +234,10 @@ const RestaurantDetail = () => {
                                                         />
                                                         <button
                                                             className="add-btn"
-                                                            onClick={() => restaurant && addToCart(
-                                                                { id: restaurant.id, name: restaurant.name, slug: restaurant.slug, imageUrl: restaurant.imageFileUrl },
-                                                                { id: product.id, name: product.name, price: product.price, imageUrl: product.imageUrl }
-                                                            )}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openProductModal(product);
+                                                            }}
                                                         >+</button>
                                                     </div>
                                                 </div>
@@ -239,6 +250,18 @@ const RestaurantDetail = () => {
                 )
                 }
             </main >
+
+            <ProductDetailModal
+                isOpen={!!selectedProduct}
+                onClose={() => setSelectedProduct(null)}
+                product={selectedProduct}
+                restaurant={restaurant ? {
+                    id: restaurant.id,
+                    name: restaurant.name,
+                    slug: restaurant.slug,
+                    imageUrl: restaurant.imageFileUrl
+                } : null}
+            />
         </div >
     );
 };
