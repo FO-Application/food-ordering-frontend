@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './RestaurantDetail.css';
 import restaurantService, { type RestaurantResponse } from '../../../../services/restaurantService';
 import categoryService, { type CategoryResponse } from '../../../../services/categoryService';
@@ -15,8 +16,9 @@ interface MenuSection {
 
 const RestaurantDetail = () => {
     const { slug } = useParams<{ slug: string }>();
+    const { t } = useTranslation();
     const { location: userLocation } = useLocation();
-    // const { addToCart } = useCart(); // addToCart used in Modal now
+    const { cart, removeFromCart, updateQuantity } = useCart();
     const [restaurant, setRestaurant] = useState<RestaurantResponse | null>(null);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
     const [menu, setMenu] = useState<MenuSection[]>([]);
@@ -24,6 +26,30 @@ const RestaurantDetail = () => {
     const [selectedProduct, setSelectedProduct] = useState<ProductResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const getProductQuantity = (productId: number) => {
+        if (!cart) return 0;
+        return cart.items
+            .filter(item => item.productId === productId)
+            .reduce((sum, item) => sum + item.quantity, 0);
+    };
+
+    const handleDecreaseQuantity = (productId: number) => {
+        if (!cart) return;
+        // Find the last item with this productId to decrement/remove
+        // We chose the last one to be consistent with "stack" behavior if multiple variants exist
+        // or simplistic behavior if the user just wants to remove "one of them"
+        const itemIndex = cart.items.findLastIndex(item => item.productId === productId);
+
+        if (itemIndex !== -1) {
+            const item = cart.items[itemIndex];
+            if (item.quantity > 1) {
+                updateQuantity(itemIndex, item.quantity - 1);
+            } else {
+                removeFromCart(itemIndex);
+            }
+        }
+    };
 
     const openProductModal = (product: ProductResponse) => {
         setSelectedProduct(product);
@@ -45,13 +71,13 @@ const RestaurantDetail = () => {
             const allRestaurantsRes = await restaurantService.getAllRestaurants(0, 100);
 
             if (!allRestaurantsRes.result || !allRestaurantsRes.result.content) {
-                throw new Error("Không thể tải danh sách nhà hàng");
+                throw new Error(t('restaurant.errorLoadingList'));
             }
 
             const foundRestaurant = allRestaurantsRes.result.content.find(r => r.slug === slugParam);
 
             if (!foundRestaurant) {
-                setError("Không tìm thấy nhà hàng này.");
+                setError(t('restaurant.notFound'));
                 setLoading(false);
                 return;
             }
@@ -67,7 +93,7 @@ const RestaurantDetail = () => {
 
         } catch (err: any) {
             console.error("Error loading restaurant:", err);
-            setError("Đã có lỗi xảy ra khi tải thông tin nhà hàng.");
+            setError(t('restaurant.errorLoading'));
         } finally {
             setLoading(false);
         }
@@ -125,20 +151,21 @@ const RestaurantDetail = () => {
         );
     }
 
+    // Calculate dynamic values
+    // Removed dynamic calculation as requested
+
     return (
         <div className="restaurant-detail-page">
             <div className="restaurant-detail-hero" style={{ backgroundImage: `url(${restaurant.imageFileUrl || '/placeholder-restaurant.jpg'})` }}>
                 <div className="restaurant-detail-overlay"></div>
                 <div className="restaurant-detail-info">
                     <div className="breadcrumbs-hero">
-                        <Link to="/">Trang chủ</Link> &gt; <Link to={`/cuisines/${restaurant.cuisineVariables?.slug || ''}`}>Ẩm thực</Link> &gt; <span>{restaurant.name}</span>
+                        <Link to="/">{t('restaurant.home')}</Link> &gt; <Link to={`/cuisines/${restaurant.cuisineVariables?.slug || ''}`}>{t('restaurant.cuisine')}</Link> &gt; <span>{restaurant.name}</span>
                     </div>
                     <h1>{restaurant.name}</h1>
                     <p className="restaurant-address">{restaurant.address}</p>
                     <div className="restaurant-meta-badges">
-                        <span className="rating-badge">★ {restaurant.rating || 0} ({restaurant.ratingCount || 0}+ đánh giá)</span>
-                        <span className="time-badge">{restaurant.deliveryTime || '30-45 phút'}</span>
-                        <span className="distance-badge">{restaurant.distance ? `${restaurant.distance.toFixed(1)} km` : 'Gần đây'}</span>
+                        <span className="rating-badge">★ {restaurant.rating || 0} ({restaurant.ratingCount || 0}+ {t('restaurant.reviews')})</span>
                     </div>
                     {userLocation?.address && (
                         <div className="restaurant-delivery-address">
@@ -146,7 +173,7 @@ const RestaurantDetail = () => {
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                                 <circle cx="12" cy="10" r="3" />
                             </svg>
-                            <span>Giao đến: {userLocation.address}</span>
+                            <span>{t('restaurant.deliverTo')}: {userLocation.address}</span>
                         </div>
                     )}
                 </div>
@@ -190,8 +217,8 @@ const RestaurantDetail = () => {
                             className="empty-state-image"
                         />
                         <p className="empty-state-text">
-                            Rất tiếc, thực đơn nhà hàng hiện chưa được cập nhật.<br />
-                            Hãy quay lại sau hoặc khám phá các nhà hàng khác nhé!
+                            {t('restaurant.menuEmpty')}<br />
+                            {t('restaurant.menuEmptyHint')}
                         </p>
                     </div>
                 ) : (
@@ -209,7 +236,7 @@ const RestaurantDetail = () => {
                                                 className="empty-state-image"
                                             />
                                             <p className="empty-state-text">
-                                                Danh mục này chưa có món ăn nào.
+                                                {t('restaurant.categoryEmpty')}
                                             </p>
                                         </div>
                                     ) : (
@@ -217,28 +244,66 @@ const RestaurantDetail = () => {
                                             {section.products.map((product) => (
                                                 <div
                                                     key={product.id}
-                                                    className="product-card"
+                                                    className={`product-card ${getProductQuantity(product.id) > 0 ? 'active-in-cart' : ''}`}
                                                     onClick={() => openProductModal(product)}
                                                     style={{ cursor: 'pointer' }}
                                                 >
-                                                    <div className="product-info">
-                                                        <h4 className="product-name">{product.name}</h4>
-                                                        <p className="product-desc">{product.description}</p>
-                                                        <p className="product-price">{product.price.toLocaleString('vi-VN')} ₫</p>
-                                                    </div>
                                                     <div className="product-image-container">
                                                         <img
-                                                            src={product.imageUrl || 'https://via.placeholder.com/100'}
+                                                            src={product.imageUrl || 'https://via.placeholder.com/120'}
                                                             alt={product.name}
                                                             className="product-image"
                                                         />
-                                                        <button
-                                                            className="add-btn"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                openProductModal(product);
-                                                            }}
-                                                        >+</button>
+                                                    </div>
+                                                    <div className="product-info">
+                                                        <div className="product-info-content">
+                                                            <h4 className="product-name">{product.name}</h4>
+                                                            <p className="product-desc">{product.description}</p>
+                                                        </div>
+                                                        <div className="product-info-footer">
+                                                            <p className="product-price">{product.price.toLocaleString('vi-VN')} ₫</p>
+
+                                                            {getProductQuantity(product.id) > 0 ? (
+                                                                <div className="product-qty-control-inline" onClick={(e) => e.stopPropagation()}>
+                                                                    <button
+                                                                        className="qty-btn-inline decrease"
+                                                                        onClick={() => handleDecreaseQuantity(product.id)}
+                                                                    >
+                                                                        {getProductQuantity(product.id) === 1 ? (
+                                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                                                            </svg>
+                                                                        ) : (
+                                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                                                <line x1="5" y1="12" x2="19" y2="12" />
+                                                                            </svg>
+                                                                        )}
+                                                                    </button>
+                                                                    <span className="qty-value-inline">{getProductQuantity(product.id)}</span>
+                                                                    <button
+                                                                        className="qty-btn-inline increase"
+                                                                        onClick={() => openProductModal(product)}
+                                                                    >
+                                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                                            <line x1="12" y1="5" x2="12" y2="19" />
+                                                                            <line x1="5" y1="12" x2="19" y2="12" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <button
+                                                                    className="add-btn"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        openProductModal(product);
+                                                                    }}
+                                                                >
+                                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                                        <path d="M12 5v14M5 12h14" />
+                                                                    </svg>
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}

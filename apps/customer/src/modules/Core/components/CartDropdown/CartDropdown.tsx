@@ -151,7 +151,7 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
                             <div className="cart-actions-bar">
                                 {isSingleItem ? (
                                     <button className="cart-delete-btn full-width" onClick={handleClearCart}>
-                                        Xóa giỏ hàng
+                                        {t('cart.clearCart')}
                                     </button>
                                 ) : (
                                     <div className="cart-bulk-actions">
@@ -162,14 +162,14 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
                                                 onChange={(e) => handleSelectAll(e.target.checked)}
                                                 className="cart-checkbox"
                                             />
-                                            Chọn tất cả
+                                            {t('cart.selectAll')}
                                         </label>
                                         <button
                                             className="cart-delete-btn"
                                             onClick={handleDeleteSelected}
                                             disabled={selectedIndices.length === 0}
                                         >
-                                            Xóa ({selectedIndices.length})
+                                            {t('cart.deleteSelected')} ({selectedIndices.length})
                                         </button>
                                     </div>
                                 )}
@@ -182,10 +182,10 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
                 {hasItems && (
                     <div className="cart-footer">
                         <div className="cart-total">
-                            <span>Tạm tính</span>
+                            <span>{t('cart.subtotal')}</span>
                             <span className="cart-total-amount">{getCartTotal().toLocaleString('vi-VN')} ₫</span>
                         </div>
-                        <button className="cart-checkout-btn">Đặt hàng</button>
+                        <button className="cart-checkout-btn">{t('cart.checkout')}</button>
                     </div>
                 )}
             </div>

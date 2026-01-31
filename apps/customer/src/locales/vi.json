@@ -88,7 +88,39 @@
         "title": "Giỏ hàng",
         "emptyTitle": "Bắt đầu đặt món ngay!",
         "emptyText": "Thêm món ăn vào giỏ hàng và đặt hàng tại đây.",
-        "browseMenu": "Xem thực đơn"
+        "browseMenu": "Xem thực đơn",
+        "clearCart": "Xóa giỏ hàng",
+        "selectAll": "Chọn tất cả",
+        "deleteSelected": "Xóa",
+        "subtotal": "Tạm tính",
+        "checkout": "Đặt hàng"
+    },
+    "restaurant": {
+        "home": "Trang chủ",
+        "cuisine": "Ẩm thực",
+        "reviews": "đánh giá",
+        "deliverTo": "Giao đến",
+        "menuEmpty": "Rất tiếc, thực đơn nhà hàng hiện chưa được cập nhật.",
+        "menuEmptyHint": "Hãy quay lại sau hoặc khám phá các nhà hàng khác nhé!",
+        "categoryEmpty": "Danh mục này chưa có món ăn nào.",
+        "errorLoadingList": "Không thể tải danh sách nhà hàng",
+        "notFound": "Không tìm thấy nhà hàng này.",
+        "errorLoading": "Đã có lỗi xảy ra khi tải thông tin nhà hàng."
+    },
+    "product": {
+        "detailTitle": "Chi tiết món ăn",
+        "loading": "Đang tải...",
+        "loadingOptions": "Đang tải tùy chọn...",
+        "mandatory": "Bắt buộc",
+        "optional": "Tùy chọn",
+        "maxSelection": "Tối đa",
+        "outOfStock": "Hết hàng",
+        "noteForRestaurant": "Ghi chú cho quán",
+        "notePlaceholder": "Ví dụ: Không hành, nhiều cay...",
+        "selectedOptions": "Tùy chọn đã chọn:",
+        "free": "Miễn phí",
+        "addToCart": "Thêm vào giỏ",
+        "addedToCart": "Đã thêm vào giỏ hàng!"
     },
     "auth": {
         "login": "Đăng nhập",

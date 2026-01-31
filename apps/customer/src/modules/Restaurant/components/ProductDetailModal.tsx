@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './ProductDetailModal.css';
 import productService, { type ProductResponse, type OptionGroupResponse, type OptionItemResponse } from '../../../services/productService';
 import { useCart, type RestaurantInfo } from '../../../contexts/CartContext';
@@ -11,6 +12,7 @@ interface ProductDetailModalProps {
 }
 
 const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose, product: initialProduct, restaurant }) => {
+    const { t } = useTranslation();
     const { addToCart } = useCart();
 
     const [fullProduct, setFullProduct] = useState<ProductResponse | null>(null);
@@ -179,7 +181,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
             <div className={`product-detail-panel ${isOpen ? 'open' : ''}`}>
                 {/* Header */}
                 <div className="product-detail-header">
-                    <h3 className="product-detail-title">Chi tiết món ăn</h3>
+                    <h3 className="product-detail-title">{t('product.detailTitle')}</h3>
                     <button className="product-close-btn" onClick={onClose}>
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <line x1="18" y1="6" x2="6" y2="18" />
@@ -209,7 +211,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
                             </div>
 
                             {/* Option Groups */}
-                            {loading && <div className="p-3 text-center">Đang tải tùy chọn...</div>}
+                            {loading && <div className="p-3 text-center">{t('product.loadingOptions')}</div>}
 
                             {!loading && fullProduct.optionGroups && fullProduct.optionGroups.length > 0 && (
                                 fullProduct.optionGroups.map(group => (
@@ -217,8 +219,8 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
                                         <div className="option-group-header">
                                             <h4>{group.name}</h4>
                                             <span className="option-requirement">
-                                                {group.isMandatory ? 'Bắt buộc' : 'Tùy chọn'}
-                                                {group.maxSelection > 1 ? ` (Tối đa ${group.maxSelection})` : ''}
+                                                {group.isMandatory ? t('product.mandatory') : t('product.optional')}
+                                                {group.maxSelection > 1 ? ` (${t('product.maxSelection')} ${group.maxSelection})` : ''}
                                             </span>
                                         </div>
 
@@ -239,7 +241,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
                                                                 disabled={!item.isAvailable}
                                                             />
                                                             <span className={`option-name ${!item.isAvailable ? 'disabled' : ''}`}>
-                                                                {item.name} {!item.isAvailable && '(Hết hàng)'}
+                                                                {item.name} {!item.isAvailable && `(${t('product.outOfStock')})`}
                                                             </span>
                                                         </div>
                                                         <span className="option-price">
@@ -259,10 +261,10 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
 
                             {/* Special Instructions */}
                             <div className="special-instructions-section">
-                                <h4>Ghi chú cho quán</h4>
+                                <h4>{t('product.noteForRestaurant')}</h4>
                                 <textarea
                                     className="instructions-input"
-                                    placeholder="Ví dụ: Không hành, nhiều cay..."
+                                    placeholder={t('product.notePlaceholder')}
                                     value={specialInstructions}
                                     onChange={(e) => setSpecialInstructions(e.target.value)}
                                     maxLength={200}
@@ -270,7 +272,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
                             </div>
                         </>
                     ) : (
-                        <div className="p-5 text-center">Đang tải...</div>
+                        <div className="p-5 text-center">{t('product.loading')}</div>
                     )}
                 </div>
 
@@ -281,7 +283,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
                         {getSelectedOptionsWithPrice().length > 0 && (
                             <div className="selected-options-summary">
                                 <h5 style={{ fontSize: '0.85rem', fontWeight: 600, margin: '0 0 8px 0', color: '#666' }}>
-                                    Tùy chọn đã chọn:
+                                    {t('product.selectedOptions')}
                                 </h5>
                                 {getSelectedOptionsWithPrice().map((opt, idx) => (
                                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
@@ -291,7 +293,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
                                                 opt.price > 0
                                                     ? `+${opt.price.toLocaleString('vi-VN')} ₫`
                                                     : `${opt.price.toLocaleString('vi-VN')} ₫`
-                                            ) : 'Miễn phí'}
+                                            ) : t('product.free')}
                                         </span>
                                     </div>
                                 ))}
@@ -317,7 +319,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
                             onClick={handleAddToCart}
                             disabled={!isValid()}
                         >
-                            Thêm vào giỏ - {calculateTotal().toLocaleString('vi-VN')} ₫
+                            {t('product.addToCart')} - {calculateTotal().toLocaleString('vi-VN')} ₫
                         </button>
                     </div>
                 )}
@@ -327,7 +329,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
             {showToast && (
                 <div className="add-to-cart-toast">
                     <div className="toast-icon">✓</div>
-                    <span className="toast-text">Đã thêm vào giỏ hàng!</span>
+                    <span className="toast-text">{t('product.addedToCart')}</span>
                 </div>
             )}
         </>

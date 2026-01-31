@@ -88,7 +88,39 @@
         "title": "Cart",
         "emptyTitle": "Start Grabbing Food!",
         "emptyText": "Add items to your cart and place orders here.",
-        "browseMenu": "Browse Menu"
+        "browseMenu": "Browse Menu",
+        "clearCart": "Clear Cart",
+        "selectAll": "Select All",
+        "deleteSelected": "Delete",
+        "subtotal": "Subtotal",
+        "checkout": "Place Order"
+    },
+    "restaurant": {
+        "home": "Home",
+        "cuisine": "Cuisine",
+        "reviews": "reviews",
+        "deliverTo": "Deliver to",
+        "menuEmpty": "Sorry, the restaurant menu is not available yet.",
+        "menuEmptyHint": "Please come back later or explore other restaurants!",
+        "categoryEmpty": "This category has no dishes yet.",
+        "errorLoadingList": "Unable to load restaurant list",
+        "notFound": "Restaurant not found.",
+        "errorLoading": "An error occurred while loading restaurant information."
+    },
+    "product": {
+        "detailTitle": "Dish Details",
+        "loading": "Loading...",
+        "loadingOptions": "Loading options...",
+        "mandatory": "Required",
+        "optional": "Optional",
+        "maxSelection": "Max",
+        "outOfStock": "Out of stock",
+        "noteForRestaurant": "Note for restaurant",
+        "notePlaceholder": "E.g.: No onions, extra spicy...",
+        "selectedOptions": "Selected options:",
+        "free": "Free",
+        "addToCart": "Add to Cart",
+        "addedToCart": "Added to cart!"
     },
     "auth": {
         "login": "Login",

@@ -12,7 +12,7 @@ import { useCart } from '../../../../contexts/CartContext';
 
 const Header = () => {
   const { t, i18n } = useTranslation();
-  const { isCartOpen, closeCart, toggleCart, openCart } = useCart();
+  const { isCartOpen, closeCart, toggleCart, openCart, cart } = useCart(); // Get cart directly
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -26,6 +26,10 @@ const Header = () => {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
 
   const currentLang = i18n.language;
+
+  // Calculate directly to ensure reactivity
+  const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
+  const cartTotal = cart?.items.reduce((sum, item) => sum + (item.totalPrice || item.unitPrice) * item.quantity, 0) || 0;
 
   // Fetch current user on component mount
   useEffect(() => {
@@ -145,14 +149,25 @@ const Header = () => {
 
           {/* Desktop Actions - Clean Icons */}
           <div className="header-actions">
-            <button className="header-btn-icon" aria-label="Cart" onClick={toggleCart}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M6 6h15l-1.5 9h-12L6 6z" />
-                <circle cx="9" cy="20" r="1" />
-                <circle cx="18" cy="20" r="1" />
-                <path d="M6 6L5 3H2" />
-              </svg>
-            </button>
+            {itemCount > 0 ? (
+              <button className="header-cart-btn-active" aria-label="Cart" onClick={toggleCart}>
+                <div className="cart-badge">{itemCount}</div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                <span className="cart-total-price">{cartTotal.toLocaleString('vi-VN')} ₫</span>
+              </button>
+            ) : (
+              <button className="header-btn-icon" aria-label="Cart" onClick={toggleCart}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+              </button>
+            )}
 
             {/* User Section - Show login button or user menu */}
             {!isLoadingUser && (

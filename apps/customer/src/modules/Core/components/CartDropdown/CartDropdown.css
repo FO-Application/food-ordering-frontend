@@ -278,11 +278,40 @@
     padding-right: 12px;
 }
 
+/* Clean Checkbox Styles */
 .cart-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
     width: 20px;
     height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    outline: none;
     cursor: pointer;
-    accent-color: #00b14f;
+    position: relative;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.cart-checkbox:checked {
+    background-color: #00b14f;
+    border-color: #00b14f;
+}
+
+.cart-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.cart-checkbox:hover {
+    border-color: #00b14f;
 }
 
 /* Actions Bar */

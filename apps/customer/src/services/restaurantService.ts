@@ -14,6 +14,8 @@ export interface RestaurantResponse {
     ownerId: number;
     slug: string; // Added slug field
     cuisineVariables?: Record<string, any>;
+    latitude?: number;
+    longitude?: number;
 }
 
 export interface PageResponse<T> {
