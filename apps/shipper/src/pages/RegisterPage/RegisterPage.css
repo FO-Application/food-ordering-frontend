@@ -1,0 +1,14 @@
+/* CSS handled globally in App.css */
+.otp-input {
+    text-align: center;
+    font-size: 1.5rem !important;
+    letter-spacing: 0.5rem;
+    font-weight: 700;
+}
+
+.row-2 {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Other styles reused from App.css */

@@ -1,0 +1,359 @@
+/* Previous styles remain, adding/updating specifics */
+
+.mobile-wrapper {
+    display: flex;
+    justify-content: center;
+    background-color: #111;
+    min-height: 100vh;
+}
+
+.dashboard-container {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #f3f4f6;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Map & Overlays */
+.map-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.top-bar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 3.5rem 1.2rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.income-pill,
+.profile-pill,
+.icon-btn-circle {
+    pointer-events: auto;
+    background: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.income-pill {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.profile-pill {
+    padding: 2px;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+}
+
+.icon-btn-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+    cursor: pointer;
+    color: #444;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Bottom Panel */
+.bottom-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    padding: 1.5rem;
+    padding-bottom: 2.5rem;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
+    z-index: 20;
+    transition: all 0.3s ease;
+}
+
+/* Incoming Order Alert */
+.incoming-order-alert {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1
+    }
+}
+
+.incoming-order-alert h3 {
+    color: #1a56db;
+    margin-bottom: 0.5rem;
+}
+
+.incoming-order-alert p {
+    color: #666;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.reject-btn {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 12px;
+    border: none;
+    background: #f3f4f6;
+    color: #666;
+    font-weight: 600;
+}
+
+.accept-btn {
+    flex: 2;
+    padding: 1rem;
+    border-radius: 12px;
+    border: none;
+    background: #1a56db;
+    color: white;
+    font-weight: 600;
+    animation: pulse-btn 1.5s infinite;
+}
+
+@keyframes pulse-btn {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Order Card Details */
+.order-card {
+    background: #f9fafb;
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.order-badge {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.order-price {
+    font-weight: 700;
+    color: #111;
+}
+
+.location-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 0.8rem;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
+.dot.start {
+    background: #1a56db;
+}
+
+.dot.end {
+    border: 2px solid #ef4444;
+    background: white;
+}
+
+.addr-text {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.addr-text small {
+    color: #6b7280;
+    font-weight: 400;
+}
+
+/* Status */
+.radar-animation {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 1rem;
+    border: 3px solid #1a56db;
+    border-radius: 50%;
+    animation: radar 2s infinite;
+    opacity: 0;
+}
+
+@keyframes radar {
+    0% {
+        transform: scale(0.5);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.offline-state {
+    text-align: center;
+}
+
+.power-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #1f2937;
+    color: white;
+    border: none;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.power-btn {
+    width: 100%;
+    border-radius: 16px;
+    height: auto;
+    padding: 1rem;
+    font-size: 1.1rem;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.btn-icon-logout {
+    background: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: none;
+    font-size: 1.2rem;
+}
+
+.swiper-container {
+    width: 100%;
+    height: 50px;
+    background: #e5e7eb;
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Utilities */
+.row-2 {
+    display: flex;
+    gap: 10px;
+}
+
+.status-text {
+    margin-bottom: 1rem;
+    font-weight: 500;
+    text-align: center;
+    color: #6b7280;
+}
+
+.stop-btn {
+    width: 100%;
+    padding: 0.8rem;
+    background: #fee2e2;
+    color: #991b1b;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Swipe Button */
+.swipe-btn {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.swipe-btn.bg-green {
+    background: #10b981;
+    color: white;
+}
+
+.swipe-btn.bg-blue {
+    background: #2563eb;
+    color: white;
+}
+
+.online-state {
+    text-align: center;
+}
+
+.online-state .status-text.online {
+    color: #10b981;
+}
+
+.slider-action-area {
+    margin-top: 0.5rem;
+}
