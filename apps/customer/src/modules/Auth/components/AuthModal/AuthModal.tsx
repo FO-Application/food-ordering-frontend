@@ -257,7 +257,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
                 otpCode: otpCode
             };
 
-            const response = await authService.verifyOtp(requestData);
+            const response = await authService.verifyOtpAndRegister(requestData);
 
             if (response.result) {
                 setSuccessMessage('Xác thực thành công! Bạn có thể đăng nhập.');
@@ -857,7 +857,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
                     {/* Messages */}
                     {errorMessage && (
                         <div className="auth-message error">
-                            <span>⚠️ {errorMessage}</span>
+                            <span>{errorMessage}</span>
                             <button onClick={() => setErrorMessage(null)}>×</button>
                         </div>
                     )}

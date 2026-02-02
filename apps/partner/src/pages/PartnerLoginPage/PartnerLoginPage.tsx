@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import authService from '../../services/authService';
 import userService from '../../services/userService';
 import notificationService from '../../services/notificationService';
@@ -290,7 +290,7 @@ const PartnerLoginPage: React.FC = () => {
 
             <div className="login-footer">
                 <p className="footer-text">
-                    Chưa có tài khoản? <a href="#" className="register-link">Đăng ký làm đối tác</a>
+                    Chưa có tài khoản? <Link to="/register" className="register-link">Đăng ký làm đối tác</Link>
                 </p>
             </div>
         </>

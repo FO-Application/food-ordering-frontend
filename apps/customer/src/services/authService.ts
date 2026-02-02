@@ -99,9 +99,10 @@ const authService = {
 
     /**
      * Xác thực OTP & Kích hoạt tài khoản (Bước 2)
+     * Gọi endpoint verify-otp-and-register để vừa xác thực OTP vừa kích hoạt tài khoản
      */
-    verifyOtp: async (data: VerifyOtpRequest): Promise<APIResponse<UserResponse>> => {
-        const response = await api.post<APIResponse<UserResponse>>('/auth/verify-otp', data);
+    verifyOtpAndRegister: async (data: VerifyOtpRequest): Promise<APIResponse<UserResponse>> => {
+        const response = await api.post<APIResponse<UserResponse>>('/auth/verify-otp-and-register', data);
         return response.data;
     },
 

@@ -76,8 +76,8 @@ const authService = {
     },
 
     // --- XÁC THỰC OTP ---
-    verifyOtp: async (data: VerifyOtpRequest): Promise<APIResponse<UserResponse>> => {
-        const response = await api.post<APIResponse<UserResponse>>('/auth/verify-otp', data);
+    verifyOtpAndRegister: async (data: VerifyOtpRequest): Promise<APIResponse<UserResponse>> => {
+        const response = await api.post<APIResponse<UserResponse>>('/auth/verify-otp-and-register', data);
         return response.data;
     },
 
