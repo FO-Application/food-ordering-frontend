@@ -41,7 +41,7 @@ export const requestNotificationPermission = async (): Promise<string | null> =>
         }
 
         // Get FCM token
-        const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+        const token = await getToken(messaging);
         console.log('[FCM] Token obtained:', token);
         return token;
     } catch (error) {

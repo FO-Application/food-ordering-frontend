@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../../../contexts/CartContext';
+import CheckoutModal from '../CheckoutModal/CheckoutModal';
 import './CartDropdown.css';
 
 interface CartDropdownProps {
@@ -13,6 +14,7 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
     const { t } = useTranslation();
     const { cart, updateQuantity, removeFromCart, removeItems, clearCart, getCartTotal, getCartItemCount } = useCart();
     const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+    const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
     const hasItems = cart && cart.items.length > 0;
     const isSingleItem = hasItems && cart!.items.length === 1;
@@ -50,6 +52,19 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
     const handleClearCart = () => {
         clearCart();
         setSelectedIndices([]);
+    };
+
+    const handleCheckout = () => {
+        setIsCheckoutOpen(true);
+    };
+
+    const handleOrderSuccess = (orderId: number) => {
+        setIsCheckoutOpen(false);
+        onClose();
+        // Show success notification
+        alert(`🎉 Đặt hàng thành công! Mã đơn: #${orderId}`);
+        // Optionally navigate to order tracking
+        // navigate(`/orders/${orderId}`);
     };
 
     return (
@@ -185,11 +200,21 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
                             <span>{t('cart.subtotal')}</span>
                             <span className="cart-total-amount">{getCartTotal().toLocaleString('vi-VN')} ₫</span>
                         </div>
-                        <button className="cart-checkout-btn">{t('cart.checkout')}</button>
+                        <button className="cart-checkout-btn" onClick={handleCheckout}>
+                            {t('cart.checkout')}
+                        </button>
                     </div>
                 )}
             </div>
+
+            {/* Checkout Modal */}
+            <CheckoutModal
+                isOpen={isCheckoutOpen}
+                onClose={() => setIsCheckoutOpen(false)}
+                onSuccess={handleOrderSuccess}
+            />
         </>
     );
 };
 export default CartDropdown;
+

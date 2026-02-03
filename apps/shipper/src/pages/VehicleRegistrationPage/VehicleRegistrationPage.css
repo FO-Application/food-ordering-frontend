@@ -1,0 +1,11 @@
+.vehicle-register-page {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.secondary {
+    margin-top: 10px;
+    color: #666;
+}

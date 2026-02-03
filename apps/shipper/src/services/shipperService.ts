@@ -40,6 +40,18 @@ const shipperService = {
     getProfile: async () => {
         const response = await api.get<any>('/user/me');
         return response.data;
+    },
+
+    // Get Shipper Profile (Vehicle, Online Status)
+    getShipperProfile: async () => {
+        const response = await api.get<any>('/delivery/shippers/profile');
+        return response.data;
+    },
+
+    // Register Shipper Info
+    registerShipper: async (data: { vehicleNumber: string; vehicleType: string }) => {
+        const response = await api.post<any>('/delivery/shippers/register', data);
+        return response.data;
     }
 };
 

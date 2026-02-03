@@ -5,6 +5,7 @@ import './Header.css';
 import { CartDropdown } from '../CartDropdown';
 import { AuthModal } from '../../../Auth/components/AuthModal';
 import { UserProfileModal } from '../UserProfileModal';
+import { OrderHistorySidebar } from '../OrderHistorySidebar';
 import { clearAllCookies } from '../../../../utils/cookie';
 import userService, { type UserProfile } from '../../../../services/userService';
 import authService from '../../../../services/authService';
@@ -12,7 +13,7 @@ import { useCart } from '../../../../contexts/CartContext';
 
 const Header = () => {
   const { t, i18n } = useTranslation();
-  const { isCartOpen, closeCart, toggleCart, openCart, cart } = useCart(); // Get cart directly
+  const { isCartOpen, closeCart, toggleCart, cart } = useCart(); // Get cart directly
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -20,6 +21,7 @@ const Header = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isOrderHistoryOpen, setIsOrderHistoryOpen] = useState(false);
 
   // User state
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -125,8 +127,8 @@ const Header = () => {
     setIsLangDropdownOpen(!isLangDropdownOpen);
   };
 
-  const handleOpenCartFromMenu = () => {
-    openCart();
+  const handleOpenOrderHistory = () => {
+    setIsOrderHistoryOpen(true);
     setIsUserMenuOpen(false);
   };
 
@@ -196,12 +198,13 @@ const Header = () => {
                           </svg>
                           {t('header.profile') || 'Tài khoản'}
                         </button>
-                        <button className="user-dropdown-item" onClick={handleOpenCartFromMenu}>
+                        <button className="user-dropdown-item" onClick={handleOpenOrderHistory}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M6 6h15l-1.5 9h-12L6 6z" />
-                            <circle cx="9" cy="20" r="1" />
-                            <circle cx="18" cy="20" r="1" />
-                            <path d="M6 6L5 3H2" />
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10 9 9 9 8 9" />
                           </svg>
                           {t('header.orders') || 'Đơn hàng'}
                         </button>
@@ -315,6 +318,12 @@ const Header = () => {
         onClose={closeProfileModal}
         user={user}
         onUserUpdated={fetchCurrentUser}
+      />
+
+      {/* Order History Sidebar */}
+      <OrderHistorySidebar
+        isOpen={isOrderHistoryOpen}
+        onClose={() => setIsOrderHistoryOpen(false)}
       />
     </>
   );

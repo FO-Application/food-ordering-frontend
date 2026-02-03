@@ -547,7 +547,7 @@ function App() {
                     </div>
 
                     <div className="header-right">
-                        <a href="http://localhost:3002/login" className="header-link">
+                        <a href="http://localhost:3003/login" className="header-link">
                             Trở thành Đối tác của Fast Bite ▾
                         </a>
                         <a href="#" className="header-link">Trung tâm Hỗ trợ</a>
@@ -562,19 +562,19 @@ function App() {
                     <h1 className="hero-title">Fast Bite</h1>
                     <p className="hero-subtitle">Thèm món gì - Đặt ngay món đó!</p>
 
-                    <a href="http://localhost:3000" className="btn-order">
+                    <a href="http://localhost:3001" className="btn-order">
                         Đặt hàng ngay
                     </a>
 
                     <p className="hero-partner">
                         Trở thành Đối tác Nhà hàng của Fast Bite ngay!{' '}
-                        <a href="http://localhost:3002/login">Ấn vào đây.</a>
+                        <a href="http://localhost:3003/login">Ấn vào đây.</a>
                     </p>
                 </div>
             </section>
 
             {/* Floating Partner Button */}
-            <a href="http://localhost:3002/login" className="floating-btn">
+            <a href="http://localhost:3003/login" className="floating-btn">
                 <div className="floating-icon-wrapper">
                     <svg className="floating-person-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                         <circle cx="12" cy="7" r="4" />
@@ -657,7 +657,7 @@ function App() {
                                 <div className={`step-num ${activeStep === 1 ? 'active' : ''}`}>1</div>
                                 <div className="step-content">
                                     <p>Truy cập ứng dụng Fast Bite, chọn "Giao thức ăn".</p>
-                                    <a href="http://localhost:3000" className="step-link">Đặt ngay</a>
+                                    <a href="http://localhost:3001" className="step-link">Đặt ngay</a>
                                 </div>
                             </div>
                             <div className={`step ${activeStep === 2 ? 'active' : ''}`} onClick={() => setActiveStep(2)}>
@@ -720,7 +720,7 @@ function App() {
                         </div>
                         <div className="footer-col">
                             <h4>Đối tác</h4>
-                            <a href="http://localhost:3002">Đăng ký nhà hàng</a>
+                            <a href="http://localhost:3003">Đăng ký nhà hàng</a>
                             <a href="#">Tài xế</a>
                         </div>
                         <div className="footer-col">

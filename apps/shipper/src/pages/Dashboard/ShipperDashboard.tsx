@@ -58,6 +58,15 @@ const ShipperDashboard: React.FC = () => {
         try {
             const data = await shipperService.getProfile();
             setProfile(data.result);
+
+            // Check if vehicle registered
+            try {
+                await shipperService.getShipperProfile();
+            } catch (err: any) {
+                // If 400/404/500 -> Likely not registered
+                console.warn("Shipper profile not found, redirecting to register...");
+                navigate('/vehicle-register');
+            }
         } catch (error) {
             console.error("Load profile error", error);
         }

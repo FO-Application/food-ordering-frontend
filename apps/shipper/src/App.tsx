@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage/LoginPage';
 import ShipperRegisterPage from './pages/RegisterPage/ShipperRegisterPage';
+import VehicleRegistrationPage from './pages/VehicleRegistrationPage/VehicleRegistrationPage';
 import ShipperDashboard from './pages/Dashboard/ShipperDashboard';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import HistoryPage from './pages/HistoryPage/HistoryPage';
@@ -20,6 +21,9 @@ const App: React.FC = () => {
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<ShipperRegisterPage />} />
+                <Route path="/vehicle-register" element={
+                    <ProtectedRoute><VehicleRegistrationPage /></ProtectedRoute>
+                } />
 
                 <Route path="/dashboard" element={
                     <ProtectedRoute><ShipperDashboard /></ProtectedRoute>
