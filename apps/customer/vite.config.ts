@@ -16,6 +16,33 @@ export default defineConfig({
           'ngrok-skip-browser-warning': 'true',
         },
       },
+      // Proxy for merchant images to bypass ngrok warning
+      '/merchant-images': {
+        target: 'https://vanessa-unabsolved-buck.ngrok-free.dev',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
+      },
+      // Catch-all for other static assets served by backend if needed
+      '/static': {
+        target: 'https://vanessa-unabsolved-buck.ngrok-free.dev',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
+      },
+      // Proxy for any image file extensions to bypass ngrok warning
+      '^/.*\\.(jpg|jpeg|png|gif|webp|svg)$': {
+        target: 'https://vanessa-unabsolved-buck.ngrok-free.dev',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
+      },
     },
   },
 })

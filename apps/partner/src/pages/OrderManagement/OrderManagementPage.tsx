@@ -7,8 +7,20 @@ import orderService, {
     ORDER_STATUS_LABELS,
     ORDER_STATUS_COLORS
 } from '../../services/orderService';
+import notificationService from '../../services/notificationService';
+import { formatDateTime } from '../../utils/dateUtils';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import './OrderManagement.css';
+
+// Confirmation Modal Types
+type ConfirmActionType = 'confirm' | 'ready' | 'cancel' | null;
+
+interface ConfirmModalState {
+    isOpen: boolean;
+    actionType: ConfirmActionType;
+    orderId: number | null;
+    isProcessing: boolean;
+}
 
 const OrderManagementPage: React.FC = () => {
     const { t } = useTranslation();
@@ -19,6 +31,15 @@ const OrderManagementPage: React.FC = () => {
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [restaurantId, setRestaurantId] = useState<number>(0);
+
+    // Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({
+        isOpen: false,
+        actionType: null,
+        orderId: null,
+        isProcessing: false
+    });
+    const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
     const statusTabs = [
         { key: '', label: t('orders.all') },
@@ -62,36 +83,88 @@ const OrderManagementPage: React.FC = () => {
         }
     }, [loadOrders, restaurantId]);
 
-    const handleConfirm = async (orderId: number) => {
-        if (!window.confirm(t('orders.confirmQuestion'))) return;
+    // Real-time updates
+    useEffect(() => {
+        const unsubscribe = notificationService.onMessage((message) => {
+            // Check if the notification is related to orders
+            // Adjust this condition based on your actual notification titles or data
+            if (message.title.toLowerCase().includes('đơn') ||
+                message.title.toLowerCase().includes('order') ||
+                message.data?.type === 'ORDER_CREATED') {
+
+                console.log('New order notification received, reloading orders...');
+                loadOrders();
+            }
+        });
+        return () => unsubscribe();
+    }, [loadOrders]);
+
+    // Open confirmation modal
+    const openConfirmModal = (actionType: ConfirmActionType, orderId: number) => {
+        setConfirmModal({ isOpen: true, actionType, orderId, isProcessing: false });
+    };
+
+    // Close confirmation modal
+    const closeConfirmModal = () => {
+        setConfirmModal({ isOpen: false, actionType: null, orderId: null, isProcessing: false });
+    };
+
+    // Execute the confirmed action
+    const executeConfirmedAction = async () => {
+        if (!confirmModal.orderId || !confirmModal.actionType) return;
+
+        setConfirmModal(prev => ({ ...prev, isProcessing: true }));
+
         try {
-            await orderService.confirmOrder(orderId);
+            switch (confirmModal.actionType) {
+                case 'confirm':
+                    await orderService.confirmOrder(confirmModal.orderId);
+                    setToastMessage({ text: 'Đã xác nhận đơn hàng và bắt đầu nấu!', type: 'success' });
+                    break;
+                case 'ready':
+                    await orderService.markOrderReady(confirmModal.orderId);
+                    setToastMessage({ text: 'Đơn hàng đã sẵn sàng giao!', type: 'success' });
+                    break;
+                case 'cancel':
+                    await orderService.cancelOrder(confirmModal.orderId);
+                    setToastMessage({ text: 'Đã hủy đơn hàng!', type: 'success' });
+                    break;
+            }
             loadOrders();
             setSelectedOrder(null);
         } catch (error) {
-            alert('Không thể xác nhận đơn hàng');
+            setToastMessage({ text: 'Không thể thực hiện thao tác. Vui lòng thử lại!', type: 'error' });
+        } finally {
+            closeConfirmModal();
         }
     };
 
-    const handleReady = async (orderId: number) => {
-        if (!window.confirm(t('orders.readyQuestion'))) return;
-        try {
-            await orderService.markOrderReady(orderId);
-            loadOrders();
-            setSelectedOrder(null);
-        } catch (error) {
-            alert('Không thể cập nhật trạng thái');
-        }
-    };
-
-    const handleCancel = async (orderId: number) => {
-        if (!window.confirm(t('orders.cancelQuestion'))) return;
-        try {
-            await orderService.cancelOrder(orderId);
-            loadOrders();
-            setSelectedOrder(null);
-        } catch (error) {
-            alert('Không thể hủy đơn hàng');
+    // Get modal content based on action type
+    const getConfirmModalContent = () => {
+        switch (confirmModal.actionType) {
+            case 'confirm':
+                return {
+                    title: 'Xác nhận đơn hàng',
+                    message: 'Bạn có chắc muốn xác nhận và bắt đầu nấu đơn hàng này?',
+                    confirmText: 'Bắt đầu nấu',
+                    confirmClass: 'btn-primary'
+                };
+            case 'ready':
+                return {
+                    title: 'Hoàn thành món',
+                    message: 'Đánh dấu đơn hàng đã nấu xong và sẵn sàng giao?',
+                    confirmText: 'Đã sẵn sàng',
+                    confirmClass: 'btn-success'
+                };
+            case 'cancel':
+                return {
+                    title: 'Hủy đơn hàng',
+                    message: 'Bạn có chắc muốn hủy đơn hàng này?',
+                    confirmText: 'Xác nhận hủy',
+                    confirmClass: 'btn-danger'
+                };
+            default:
+                return { title: '', message: '', confirmText: '', confirmClass: '' };
         }
     };
 
@@ -100,7 +173,7 @@ const OrderManagementPage: React.FC = () => {
     };
 
     const formatDate = (dateStr: string) => {
-        return new Date(dateStr).toLocaleString('vi-VN');
+        return formatDateTime(dateStr);
     };
 
     const getStatusBadge = (status: string) => {
@@ -190,13 +263,13 @@ const OrderManagementPage: React.FC = () => {
                                         <td style={{ textAlign: 'right' }}>
                                             <button className="link-btn" onClick={() => setSelectedOrder(order)}>Chi tiết</button>
                                             {canConfirm(order.orderStatus) && (
-                                                <button className="link-btn primary" onClick={() => handleConfirm(order.id)}>Xác nhận</button>
+                                                <button className="link-btn primary" onClick={() => openConfirmModal('confirm', order.id)}>Xác nhận</button>
                                             )}
                                             {canMarkReady(order.orderStatus) && (
-                                                <button className="link-btn success" onClick={() => handleReady(order.id)}>Hoàn thành</button>
+                                                <button className="link-btn success" onClick={() => openConfirmModal('ready', order.id)}>Hoàn thành</button>
                                             )}
                                             {canCancel(order.orderStatus) && (
-                                                <button className="link-btn danger" onClick={() => handleCancel(order.id)}>Hủy</button>
+                                                <button className="link-btn danger" onClick={() => openConfirmModal('cancel', order.id)}>Hủy</button>
                                             )}
                                         </td>
                                     </tr>
@@ -328,16 +401,77 @@ const OrderManagementPage: React.FC = () => {
 
                             <div className="modal-actions">
                                 {canCancel(selectedOrder.orderStatus) && (
-                                    <button className="btn-danger" onClick={() => handleCancel(selectedOrder.id)}>Hủy đơn</button>
+                                    <button className="btn-danger" onClick={() => openConfirmModal('cancel', selectedOrder.id)}>Hủy đơn</button>
                                 )}
                                 {canConfirm(selectedOrder.orderStatus) && (
-                                    <button className="btn-primary" onClick={() => handleConfirm(selectedOrder.id)}>Xác nhận & Bắt đầu nấu</button>
+                                    <button className="btn-primary" onClick={() => openConfirmModal('confirm', selectedOrder.id)}>Xác nhận & Bắt đầu nấu</button>
                                 )}
                                 {canMarkReady(selectedOrder.orderStatus) && (
-                                    <button className="btn-primary" onClick={() => handleReady(selectedOrder.id)}>Đánh dấu hoàn thành</button>
+                                    <button className="btn-primary" onClick={() => openConfirmModal('ready', selectedOrder.id)}>Đánh dấu hoàn thành</button>
                                 )}
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* Styled Confirmation Modal */}
+                {confirmModal.isOpen && (
+                    <div className="modal-overlay" onClick={closeConfirmModal}>
+                        <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '340px' }}>
+                            <div className="modal-header" style={{ padding: '12px 16px' }}>
+                                <h3 style={{ fontSize: '1rem' }}>{getConfirmModalContent().title}</h3>
+                                <button className="close-btn" onClick={closeConfirmModal}>&times;</button>
+                            </div>
+                            <div style={{ padding: '16px' }}>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: '#374151', lineHeight: 1.5 }}>
+                                    {getConfirmModalContent().message}
+                                </p>
+                            </div>
+                            <div className="modal-actions" style={{ padding: '12px 16px' }}>
+                                <button
+                                    className="btn-secondary"
+                                    onClick={closeConfirmModal}
+                                    disabled={confirmModal.isProcessing}
+                                    style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+                                >
+                                    Hủy bỏ
+                                </button>
+                                <button
+                                    className={getConfirmModalContent().confirmClass}
+                                    onClick={executeConfirmedAction}
+                                    disabled={confirmModal.isProcessing}
+                                    style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+                                >
+                                    {confirmModal.isProcessing ? 'Đang xử lý...' : getConfirmModalContent().confirmText}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Toast Notification */}
+                {toastMessage && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            bottom: '24px',
+                            right: '24px',
+                            padding: '16px 24px',
+                            borderRadius: '10px',
+                            background: toastMessage.type === 'success' ? '#10b981' : '#ef4444',
+                            color: 'white',
+                            fontWeight: 500,
+                            boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                            zIndex: 2000,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            animation: 'slideUp 0.3s ease'
+                        }}
+                        onClick={() => setToastMessage(null)}
+                    >
+                        <span>{toastMessage.type === 'success' ? '✓' : '✕'}</span>
+                        {toastMessage.text}
                     </div>
                 )}
             </div>

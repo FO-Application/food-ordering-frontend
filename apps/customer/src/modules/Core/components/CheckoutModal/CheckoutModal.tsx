@@ -4,6 +4,7 @@ import { useLocation } from '../../../../contexts/LocationContext';
 import { createOrder, type OrderRequest } from '../../../../services/orderService';
 import { createZaloPayPayment, queryZaloPayStatus } from '../../../../services/paymentService';
 import './CheckoutModal.css';
+import { getProxiedImageUrl } from '../../../../utils/urlUtils';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -15,7 +16,7 @@ type PaymentMethod = 'COD' | 'ZALOPAY';
 
 // Payment logos
 const COD_LOGO = 'https://cdn-icons-png.flaticon.com/512/2331/2331970.png';
-const ZALOPAY_LOGO = 'https://upload.wikimedia.org/wikipedia/vi/thumb/7/77/ZaloPay_Logo.png/220px-ZaloPay_Logo.png';
+const ZALOPAY_LOGO = 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png';
 
 const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
     const { cart, getCartTotal, clearCart } = useCart();
@@ -40,6 +41,18 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
             setCoordinates({ lat: userLocation.lat, lon: userLocation.lon });
         }
     }, [isOpen, userLocation]);
+
+    // Reset state when modal opens/closes to prevent stuck loading state
+    useEffect(() => {
+        if (isOpen) {
+            // Only reset if not currently in a valid loading state
+            setError(null);
+            setStatusMessage(null);
+            setIsLoading(false);
+            setCreatedOrderId(null);
+        }
+    }, [isOpen]);
+
 
     // Poll ZaloPay status
     const pollZaloPayStatus = async (appTransId: string, orderId: number) => {
@@ -87,6 +100,14 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
         poll();
     };
 
+    // Track created order to prevent duplicates on retry
+    const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
+
+    // Reset createdOrderId if critical info changes
+    useEffect(() => {
+        setCreatedOrderId(null);
+    }, [deliveryAddress, paymentMethod, cart]);
+
     const handleSubmit = async () => {
         if (!cart || cart.items.length === 0) {
             setError('Giỏ hàng trống');
@@ -105,24 +126,31 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
 
         setIsLoading(true);
         setError(null);
-        setStatusMessage('Đang tạo đơn hàng...');
+        setStatusMessage('Đang xử lý đơn hàng...');
 
         try {
-            const orderRequest: OrderRequest = {
-                merchantId: cart.restaurantId,
-                paymentMethod: paymentMethod,
-                deliveryAddress: deliveryAddress,
-                deliveryLatitude: coordinates.lat,
-                deliveryLongitude: coordinates.lon,
-                items: cart.items.map(item => ({
-                    productId: item.productId,
-                    quantity: item.quantity,
-                    optionIds: item.selectedOptions?.map(opt => opt.id) || []
-                }))
-            };
+            let orderId = createdOrderId;
 
-            const result = await createOrder(orderRequest);
-            const orderId = result.id;
+            // Only create new order if we haven't already (or if info changed)
+            if (!orderId) {
+                setStatusMessage('Đang tạo đơn hàng...');
+                const orderRequest: OrderRequest = {
+                    merchantId: cart.restaurantId,
+                    paymentMethod: paymentMethod,
+                    deliveryAddress: deliveryAddress,
+                    deliveryLatitude: coordinates.lat,
+                    deliveryLongitude: coordinates.lon,
+                    items: cart.items.map(item => ({
+                        productId: item.productId,
+                        quantity: item.quantity,
+                        optionIds: item.selectedOptions?.map(opt => opt.id) || []
+                    }))
+                };
+
+                const result = await createOrder(orderRequest);
+                orderId = result.id;
+                setCreatedOrderId(orderId);
+            }
 
             if (paymentMethod === 'COD') {
                 // COD - success immediately
@@ -147,10 +175,10 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
                         pollZaloPayStatus(zalopayResult.app_trans_id, orderId);
                     } else {
                         // Popup blocked - show link
-                        setError('Trình duyệt chặn popup. Vui lòng cho phép popup hoặc click link bên dưới.');
+                        setError('Trình duyệt chặn popup. Vui lòng cho phép popup và thử lại.');
                         setStatusMessage(null);
                         setIsLoading(false);
-                        // Could show a manual link here
+                        // Don't clear createdOrderId here, allowing retry
                     }
                 } else {
                     throw new Error('Không nhận được link thanh toán ZaloPay');
@@ -161,6 +189,8 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
             setError(err.response?.data?.message || 'Đặt hàng thất bại. Vui lòng thử lại.');
             setStatusMessage(null);
             setIsLoading(false);
+            // Don't clear createdOrderId on temporary errors? 
+            // Better to keep it if it's just a network/payment error.
         }
     };
 
@@ -184,11 +214,14 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
                 </div>
 
                 <div className="checkout-content">
+
+
+
                     {/* Restaurant Info */}
                     {cart && (
                         <div className="checkout-restaurant">
                             <img
-                                src={cart.restaurantImage || 'https://via.placeholder.com/50'}
+                                src={getProxiedImageUrl(cart.restaurantImage) || 'https://via.placeholder.com/50'}
                                 alt={cart.restaurantName}
                                 className="checkout-restaurant-img"
                             />
@@ -283,13 +316,6 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
                         </div>
                     </div>
 
-                    {/* Status Message */}
-                    {statusMessage && (
-                        <div className="checkout-status">
-                            <span className="loading-spinner" />
-                            {statusMessage}
-                        </div>
-                    )}
 
                     {/* Error Message */}
                     {error && (

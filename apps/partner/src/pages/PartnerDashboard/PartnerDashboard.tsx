@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import orderService, { ORDER_STATUS_COLORS } from '../../services/orderService';
+import notificationService from '../../services/notificationService';
 import type { OrderResponse } from '../../services/orderService';
-import restaurantService from '../../services/restaurantService';
 import './PartnerDashboard.css';
 
 const PartnerDashboard: React.FC = () => {
@@ -40,18 +40,19 @@ const PartnerDashboard: React.FC = () => {
                 // API response structure: { result: { content: [...], totalElements, ... } }
                 if (ordersData?.result?.content) {
                     setRecentOrders(ordersData.result.content);
-
-                    // Calculate today's orders count
-                    const today = new Date().toDateString();
-                    const todayOrdersCount = ordersData.result.content.filter((o: OrderResponse) =>
-                        new Date(o.createdAt).toDateString() === today
-                    ).length;
-
-                    setStats(prev => ({
-                        ...prev,
-                        todayOrders: todayOrdersCount
-                    }));
                 }
+
+                // 3. Fetch Merchant Stats
+                const statsData = await orderService.getMerchantStats(id);
+                if (statsData?.result) {
+                    setStats({
+                        todayOrders: statsData.result.ordersToday,
+                        monthlyRevenue: statsData.result.totalRevenue,
+                        avgRating: statsData.result.averageRating,
+                        totalProducts: statsData.result.menuItems
+                    });
+                }
+
             } catch (error: any) {
                 console.error("Failed to load dashboard data", error);
                 console.error("Error details:", {
@@ -77,6 +78,44 @@ const PartnerDashboard: React.FC = () => {
         };
 
         loadDashboardData();
+    }, []);
+
+    // Subscribe to new order notifications and refresh data
+    useEffect(() => {
+        const unsubscribe = notificationService.onMessage((message) => {
+            console.log('[PartnerDashboard] New notification received, refreshing data...', message.title);
+            // Auto-refresh dashboard when a new order notification arrives
+            if (message.title.toLowerCase().includes('đơn') || message.title.toLowerCase().includes('order')) {
+                // Re-fetch dashboard data
+                const refreshData = async () => {
+                    const restaurantId = localStorage.getItem('currentRestaurantId');
+                    if (!restaurantId) return;
+                    const id = Number(restaurantId);
+
+                    try {
+                        const ordersData = await orderService.getMerchantOrders(id, undefined, 0, 5);
+                        if (ordersData?.result?.content) {
+                            setRecentOrders(ordersData.result.content);
+                        }
+
+                        const statsData = await orderService.getMerchantStats(id);
+                        if (statsData?.result) {
+                            setStats({
+                                todayOrders: statsData.result.ordersToday,
+                                monthlyRevenue: statsData.result.totalRevenue,
+                                avgRating: statsData.result.averageRating,
+                                totalProducts: statsData.result.menuItems
+                            });
+                        }
+                    } catch (error) {
+                        console.error('[PartnerDashboard] Failed to refresh data:', error);
+                    }
+                };
+                refreshData();
+            }
+        });
+
+        return () => unsubscribe();
     }, []);
 
     const getStatusLabel = (status: string) => {
@@ -140,7 +179,7 @@ const PartnerDashboard: React.FC = () => {
                         </svg>
                     </div>
                     <div className="stat-card-info">
-                        <p className="stat-card-value">{stats.todayOrders || 12}</p>
+                        <p className="stat-card-value">{stats.todayOrders}</p>
                         <p className="stat-card-label">{t('dashboard.todayOrders')}</p>
                     </div>
                 </div>
@@ -152,7 +191,9 @@ const PartnerDashboard: React.FC = () => {
                         </svg>
                     </div>
                     <div className="stat-card-info">
-                        <p className="stat-card-value">2.4M</p>
+                        <p className="stat-card-value">
+                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(stats.monthlyRevenue)}
+                        </p>
                         <p className="stat-card-label">{t('dashboard.totalRevenue')}</p>
                     </div>
                 </div>
@@ -164,7 +205,7 @@ const PartnerDashboard: React.FC = () => {
                         </svg>
                     </div>
                     <div className="stat-card-info">
-                        <p className="stat-card-value">4.8</p>
+                        <p className="stat-card-value">{stats.avgRating}</p>
                         <p className="stat-card-label">{t('dashboard.avgRating')}</p>
                     </div>
                 </div>
@@ -176,7 +217,7 @@ const PartnerDashboard: React.FC = () => {
                         </svg>
                     </div>
                     <div className="stat-card-info">
-                        <p className="stat-card-value">45</p>
+                        <p className="stat-card-value">{stats.totalProducts}</p>
                         <p className="stat-card-label">{t('dashboard.menuItems')}</p>
                     </div>
                 </div>

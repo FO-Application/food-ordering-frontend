@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../../../contexts/CartContext';
 import CheckoutModal from '../CheckoutModal/CheckoutModal';
+import { getProxiedImageUrl } from '../../../../utils/urlUtils';
+import ToastNotification from '../ToastNotification/ToastNotification';
 import './CartDropdown.css';
 
 interface CartDropdownProps {
@@ -15,6 +17,7 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
     const { cart, updateQuantity, removeFromCart, removeItems, clearCart, getCartTotal, getCartItemCount } = useCart();
     const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
 
     const hasItems = cart && cart.items.length > 0;
     const isSingleItem = hasItems && cart!.items.length === 1;
@@ -62,13 +65,24 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
         setIsCheckoutOpen(false);
         onClose();
         // Show success notification
-        alert(`🎉 Đặt hàng thành công! Mã đơn: #${orderId}`);
-        // Optionally navigate to order tracking
-        // navigate(`/orders/${orderId}`);
+        setToastMessage(`🎉 Đặt hàng thành công! Mã đơn: #${orderId}`);
+        // alert(`🎉 Đặt hàng thành công! Mã đơn: #${orderId}`); // Removed alert
+    };
+
+    const handleCloseToast = () => {
+        setToastMessage(null);
     };
 
     return (
         <>
+            {toastMessage && (
+                <ToastNotification
+                    message={toastMessage}
+                    type="success"
+                    onClose={handleCloseToast}
+                />
+            )}
+
             {/* Overlay */}
             <div
                 className={`cart-overlay ${isOpen ? 'active' : ''}`}
@@ -113,7 +127,7 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
                             <div className="cart-restaurant">
                                 <Link to={`/restaurant/${cart.restaurantSlug}`} className="cart-restaurant-link" onClick={onClose}>
                                     {cart.restaurantImage && (
-                                        <img src={cart.restaurantImage} alt={cart.restaurantName} className="cart-restaurant-img" />
+                                        <img src={getProxiedImageUrl(cart.restaurantImage)} alt={cart.restaurantName} className="cart-restaurant-img" />
                                     )}
                                     <span className="cart-restaurant-name">{cart.restaurantName}</span>
                                 </Link>
@@ -135,7 +149,7 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
                                         )}
                                         <div className="cart-item-image">
                                             {item.productImage ? (
-                                                <img src={item.productImage} alt={item.productName} />
+                                                <img src={getProxiedImageUrl(item.productImage)} alt={item.productName} />
                                             ) : (
                                                 <div className="cart-item-placeholder">🍜</div>
                                             )}
@@ -217,4 +231,3 @@ const CartDropdown = ({ isOpen, onClose }: CartDropdownProps) => {
     );
 };
 export default CartDropdown;
-

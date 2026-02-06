@@ -24,30 +24,128 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
     // Notification State
     const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [selectedNotification, setSelectedNotification] = useState<NotificationMessage | null>(null);
     const unreadCount = notifications.filter(n => !n.read).length;
 
     // New Orders Count State
     const [newOrdersCount, setNewOrdersCount] = useState<number>(0);
 
+    // Format currency VND
+    const formatCurrency = (amount: number | string | undefined) => {
+        if (!amount) return '0 đồng';
+        const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+        if (isNaN(num)) return amount + '';
+        return new Intl.NumberFormat('vi-VN').format(Math.floor(num)) + ' đồng';
+    };
+
+    // Format notification body - detect and format currency patterns
+    const formatNotificationBody = (body: string) => {
+        // Match patterns like "Tổng tiền: 60000.00" or "60000" or "60000.00"
+        return body.replace(/(\d+(?:\.\d+)?)/g, (match) => {
+            const num = parseFloat(match);
+            // Only format if it looks like a currency amount (> 1000)
+            if (num >= 1000) {
+                return new Intl.NumberFormat('vi-VN').format(Math.floor(num)) + ' đồng';
+            }
+            return match;
+        });
+    };
+
+    // Get notification icon based on title/type
+    const getNotificationIcon = (notification: NotificationMessage) => {
+        const title = notification.title.toLowerCase();
+        if (title.includes('đơn hàng mới') || title.includes('đơn mới')) {
+            return (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+            );
+        }
+        if (title.includes('thanh toán') || title.includes('tiền')) {
+            return (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                    <line x1="1" y1="10" x2="23" y2="10" />
+                </svg>
+            );
+        }
+        if (title.includes('hủy')) {
+            return (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+            );
+        }
+        // Default bell icon
+        return (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+        );
+    };
+
+    // Get icon color class based on notification type
+    const getNotificationIconClass = (notification: NotificationMessage) => {
+        const title = notification.title.toLowerCase();
+        if (title.includes('đơn hàng mới') || title.includes('đơn mới')) return 'icon-order';
+        if (title.includes('thanh toán') || title.includes('tiền')) return 'icon-payment';
+        if (title.includes('hủy')) return 'icon-cancel';
+        return 'icon-default';
+    };
+
+    // Helper function to fetch new orders count
+    const fetchNewOrdersCount = async () => {
+        const restaurantId = localStorage.getItem('currentRestaurantId');
+        if (!restaurantId) return;
+
+        try {
+            // Fetch CREATED orders
+            const createdOrders = await orderService.getMerchantOrders(
+                Number(restaurantId),
+                'CREATED',
+                0,
+                100 // Get all pending orders
+            );
+
+            // Fetch PAID orders
+            const paidOrders = await orderService.getMerchantOrders(
+                Number(restaurantId),
+                'PAID',
+                0,
+                100
+            );
+
+            const createdCount = createdOrders?.result?.totalElements || 0;
+            const paidCount = paidOrders?.result?.totalElements || 0;
+            const totalNew = createdCount + paidCount;
+
+            setNewOrdersCount(totalNew);
+        } catch (error) {
+            console.warn('[DashboardLayout] Failed to fetch new orders count:', error);
+        }
+    };
+
     useEffect(() => {
         loadData();
 
-        // Subscribe to notifications
+        // Subscribe to notifications (In-App Bell) - Only real FCM notifications
         const unsubscribe = notificationService.onMessage((message) => {
             setNotifications(prev => [message, ...prev]);
-        });
 
-        // Simulate a welcome notification after 2 seconds
-        const timer = setTimeout(() => {
-            notificationService.simulateNotification(
-                'Chào mừng đối tác!',
-                'Chào mừng bạn đến với hệ thống quản lý FastBite.'
-            );
-        }, 2000);
+            // If the notification is about a new order, immediately refresh the order count
+            if (message.title.toLowerCase().includes('đơn') || message.title.toLowerCase().includes('order')) {
+                console.log('[DashboardLayout] Order notification received, refreshing order count...');
+                fetchNewOrdersCount();
+            }
+        });
 
         return () => {
             unsubscribe();
-            clearTimeout(timer);
         };
     }, []);
 
@@ -75,39 +173,25 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
         registerTopic();
     }, [restaurant, user]);
 
-    // Fetch pending orders count (CREATED + PAID)
+    // Load notification history when restaurant is available
     useEffect(() => {
-        const fetchNewOrdersCount = async () => {
-            const restaurantId = localStorage.getItem('currentRestaurantId');
-            if (!restaurantId) return;
-
-            try {
-                // Fetch CREATED orders
-                const createdOrders = await orderService.getMerchantOrders(
-                    Number(restaurantId),
-                    'CREATED',
-                    0,
-                    100 // Get all pending orders
-                );
-
-                // Fetch PAID orders
-                const paidOrders = await orderService.getMerchantOrders(
-                    Number(restaurantId),
-                    'PAID',
-                    0,
-                    100
-                );
-
-                const createdCount = createdOrders?.result?.totalElements || 0;
-                const paidCount = paidOrders?.result?.totalElements || 0;
-                const totalNew = createdCount + paidCount;
-
-                setNewOrdersCount(totalNew);
-            } catch (error) {
-                console.warn('[DashboardLayout] Failed to fetch new orders count:', error);
+        const loadNotificationHistory = async () => {
+            if (restaurant?.id) {
+                try {
+                    const history = await notificationService.getHistory(restaurant.id);
+                    setNotifications(history);
+                    console.log(`[Dashboard] Loaded ${history.length} notifications from history`);
+                } catch (error) {
+                    console.warn('[Dashboard] Failed to load notification history:', error);
+                }
             }
         };
 
+        loadNotificationHistory();
+    }, [restaurant]);
+
+    // Fetch pending orders count (CREATED + PAID) on mount and periodically
+    useEffect(() => {
         // Initial fetch
         fetchNewOrdersCount();
 
@@ -121,14 +205,38 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
         setShowNotifications(!showNotifications);
     };
 
-    const markAsRead = (id: string) => {
+    const markAsRead = async (id: string) => {
+        // Update local state immediately
         setNotifications(prev => prev.map(n =>
             n.id === id ? { ...n, read: true } : n
         ));
+        // Persist to backend
+        await notificationService.markAsRead(id);
     };
 
-    const markAllAsRead = () => {
+    const markAllAsRead = async () => {
+        // Update local state immediately
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        // Persist to backend
+        if (restaurant?.id) {
+            await notificationService.markAllAsRead(restaurant.id);
+        }
+    };
+
+    const deleteNotification = async (id: string) => {
+        // Update local state immediately
+        setNotifications(prev => prev.filter(n => n.id !== id));
+        // Persist to backend
+        await notificationService.deleteNotification(id);
+    };
+
+    const deleteAllNotifications = async () => {
+        // Update local state immediately
+        setNotifications([]);
+        // Persist to backend
+        if (restaurant?.id) {
+            await notificationService.deleteAllNotifications(restaurant.id);
+        }
     };
 
     const formatTime = (date: Date) => {
@@ -193,6 +301,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
             ]
         },
         {
+            section: t('common.edit') === 'Edit' ? 'Finance' : 'Tài chính',
+            items: [
+                { path: '/dashboard/wallet', icon: 'wallet', label: t('dashboard.wallet'), badge: null as string | null },
+            ]
+        },
+        {
             section: t('common.edit') === 'Edit' ? 'Other' : 'Khác',
             items: [
                 { path: '/dashboard/reviews', icon: 'star', label: t('sidebar.reviews'), badge: null as string | null },
@@ -233,6 +347,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
                         <line x1="16" y1="13" x2="8" y2="13" />
                         <line x1="16" y1="17" x2="8" y2="17" />
                         <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                );
+            case 'wallet':
+                return (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 12V8H6a2 2 0 0 1-2-2 2 2 0 0 1 2-2h12v4" />
+                        <path d="M4 6v12a2 2 0 0 0 2 2h14v-4" />
+                        <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
                     </svg>
                 );
             case 'star':
@@ -350,11 +472,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
                                 <div className="notification-dropdown">
                                     <div className="notification-header">
                                         <h3>{t('dashboard.notifications')}</h3>
-                                        {unreadCount > 0 && (
-                                            <button className="mark-read-btn" onClick={markAllAsRead}>
-                                                {t('dashboard.markAsRead')}
-                                            </button>
-                                        )}
+                                        <div className="notification-actions">
+                                            {unreadCount > 0 && (
+                                                <button className="mark-read-btn" onClick={markAllAsRead}>
+                                                    {t('dashboard.markAsRead')}
+                                                </button>
+                                            )}
+                                            {notifications.length > 0 && (
+                                                <button className="clear-all-btn" onClick={deleteAllNotifications}>
+                                                    Xóa tất cả
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="notification-list">
                                         {notifications.length === 0 ? (
@@ -366,18 +495,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
                                                 <div
                                                     key={notification.id}
                                                     className={`notification-item ${notification.read ? 'read' : 'unread'}`}
-                                                    onClick={() => markAsRead(notification.id)}
+                                                    onClick={() => {
+                                                        markAsRead(notification.id);
+                                                        setSelectedNotification(notification);
+                                                        setShowNotifications(false);
+                                                    }}
                                                 >
-                                                    <div className="notification-icon">
-                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                                                        </svg>
+                                                    <div className={`notification-icon ${getNotificationIconClass(notification)}`}>
+                                                        {getNotificationIcon(notification)}
                                                     </div>
                                                     <div className="notification-content">
                                                         <p className="notification-title">{notification.title}</p>
-                                                        <p className="notification-body">{notification.body}</p>
+                                                        <p className="notification-body">{formatNotificationBody(notification.body)}</p>
                                                         <span className="notification-time">{formatTime(notification.receivedAt)}</span>
                                                     </div>
+                                                    <button
+                                                        className="notification-delete-btn"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            deleteNotification(notification.id);
+                                                        }}
+                                                        title="Xóa thông báo"
+                                                    >
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                                                            <line x1="18" y1="6" x2="6" y2="18" />
+                                                            <line x1="6" y1="6" x2="18" y2="18" />
+                                                        </svg>
+                                                    </button>
                                                     {!notification.read && <span className="unread-indicator"></span>}
                                                 </div>
                                             ))
@@ -400,6 +544,51 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
                     {children}
                 </div>
             </main>
+
+            {/* Notification Detail Modal */}
+            {selectedNotification && (
+                <div className="notification-modal-overlay" onClick={() => setSelectedNotification(null)}>
+                    <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="notification-modal-header">
+                            <div className={`notification-modal-icon ${getNotificationIconClass(selectedNotification)}`}>
+                                {getNotificationIcon(selectedNotification)}
+                            </div>
+                            <button className="notification-modal-close" onClick={() => setSelectedNotification(null)}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="notification-modal-body">
+                            <h2 className="notification-modal-title">{selectedNotification.title}</h2>
+                            <p className="notification-modal-content">{formatNotificationBody(selectedNotification.body)}</p>
+                            <div className="notification-modal-meta">
+                                <span className="notification-modal-time">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <polyline points="12 6 12 12 16 14" />
+                                    </svg>
+                                    {formatTime(selectedNotification.receivedAt)}
+                                </span>
+                            </div>
+                            {selectedNotification.data?.orderId && (
+                                <div className="notification-modal-actions">
+                                    <button
+                                        className="notification-modal-btn primary"
+                                        onClick={() => {
+                                            navigate('/dashboard/orders');
+                                            setSelectedNotification(null);
+                                        }}
+                                    >
+                                        Xem đơn hàng
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

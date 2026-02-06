@@ -199,29 +199,41 @@
     font-weight: 600;
 }
 
-/* Empty Menu State - Simple Design */
+/* Empty Menu State - Polished Design */
 .menu-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 24px;
+    padding: 60px 40px;
     text-align: center;
+    /* background: #fff; */
+    /* border-radius: 16px; */
+    /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02); */
+    /* border: 1px solid #f1f3f5; */
 }
 
 .empty-state-image {
-    width: 180px;
+    width: 160px;
     height: auto;
     margin-bottom: 24px;
-    opacity: 0.9;
+    opacity: 0.85;
 }
 
-.empty-state-text {
-    font-size: 1rem;
-    color: #666;
-    line-height: 1.6;
-    max-width: 400px;
+.empty-state-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #334155;
+    margin: 0 0 8px;
+    line-height: 1.4;
+}
+
+.empty-state-hint {
+    font-size: 0.95rem;
+    color: #64748b;
     margin: 0;
+    line-height: 1.6;
+    max-width: 450px;
 }
 
 /* Menu Layout */

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import './ProductDetailModal.css';
 import productService, { type ProductResponse, type OptionGroupResponse, type OptionItemResponse } from '../../../services/productService';
 import { useCart, type RestaurantInfo } from '../../../contexts/CartContext';
+import { getProxiedImageUrl } from '../../../utils/urlUtils';
 
 interface ProductDetailModalProps {
     isOpen: boolean;
@@ -194,9 +195,10 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
                 <div className="product-detail-content">
                     {fullProduct ? (
                         <>
+
                             {/* Product Image */}
                             <img
-                                src={fullProduct.imageUrl || 'https://via.placeholder.com/400x200'}
+                                src={getProxiedImageUrl(fullProduct.imageUrl) || 'https://via.placeholder.com/400x200'}
                                 alt={fullProduct.name}
                                 className="product-main-image"
                             />

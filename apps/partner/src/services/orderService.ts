@@ -121,7 +121,26 @@ const orderService = {
     cancelOrder: async (orderId: number): Promise<any> => {
         const response = await api.put(`/management/order/merchant/${orderId}/cancel`);
         return response.data;
+    },
+
+    // Lấy thống kê nhà hàng
+    getMerchantStats: async (merchantId: number): Promise<APIResponse<MerchantStatsResponse>> => {
+        const response = await api.get(`/management/order/merchant/${merchantId}/stats`);
+        return response.data;
     }
 };
+
+export interface MerchantStatsResponse {
+    ordersToday: number;
+    totalRevenue: number;
+    averageRating: number;
+    menuItems: number;
+}
+
+export interface APIResponse<T> {
+    code: number;
+    message: string;
+    result: T;
+}
 
 export default orderService;

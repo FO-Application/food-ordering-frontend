@@ -191,9 +191,9 @@
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.action-btn {
+.menu-action-btn {
     flex: 1;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
     border: none;
     padding: 12px;
@@ -204,17 +204,18 @@
     justify-content: center;
 }
 
-.action-btn svg {
-    width: 18px;
-    height: 18px;
+.menu-action-btn svg {
+    width: 20px;
+    height: 20px;
     color: white;
 }
 
-.action-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
+.menu-action-btn:hover {
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 1;
 }
 
-.action-btn:active {
+.menu-action-btn:active {
     transform: scale(0.95);
 }
 

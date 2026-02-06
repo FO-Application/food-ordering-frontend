@@ -56,10 +56,18 @@ const LoginPage = () => {
             // stored by the browser due to withCredentials: true
             if (response.data) {
                 console.log('[LoginPage] Backend authentication successful:', response.data.message);
-                console.log('[LoginPage] Force reloading to /home...');
 
-                // Force reload using replace to clean history
-                window.location.replace('/home');
+                const role = response.data.result?.role;
+                console.log('[LoginPage] Redirecting based on role:', role);
+
+                if (role === 'MERCHANT') {
+                    window.location.href = 'http://localhost:3003';
+                } else if (role === 'SHIPPER') {
+                    window.location.href = 'http://localhost:3004';
+                } else {
+                    // Force reload using replace to clean history
+                    window.location.replace('/home');
+                }
             }
         } catch (err) {
             console.error(`[LoginPage] ${providerName} login failed:`, err);

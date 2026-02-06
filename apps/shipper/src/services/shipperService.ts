@@ -52,6 +52,24 @@ const shipperService = {
     registerShipper: async (data: { vehicleNumber: string; vehicleType: string }) => {
         const response = await api.post<any>('/delivery/shippers/register', data);
         return response.data;
+    },
+
+    // Poll Pending Orders
+    getPendingOrders: async () => {
+        const response = await api.get<any>('/delivery/shippers/pending-orders');
+        return response.data;
+    },
+
+    // Deposit Money (Top-up Wallet)
+    deposit: async (amount: number) => {
+        const response = await api.post<any>(`/delivery/shippers/wallet/deposit?amount=${amount}`);
+        return response.data;
+    },
+
+    // Get Wallet Stats
+    getWalletStats: async () => {
+        const response = await api.get<any>('/delivery/shippers/wallet');
+        return response.data;
     }
 };
 

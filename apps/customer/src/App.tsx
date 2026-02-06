@@ -6,16 +6,20 @@ import HomePage from './modules/Home/pages/HomePage';
 import Cuisines from './modules/Cuisines/pages/Cuisines/Cuisines';
 import RestaurantDetail from './modules/Restaurant/pages/RestaurantDetail/RestaurantDetail';
 
+import RoleGuard from './modules/Core/components/RoleGuard/RoleGuard';
+
 function App() {
   return (
     <div className="app">
-      <Header />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/cuisines/:slug" element={<Cuisines />} />
-        <Route path="/restaurant/:slug" element={<RestaurantDetail />} />
-      </Routes>
-      <Footer />
+      <RoleGuard>
+        <Header />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/cuisines/:slug" element={<Cuisines />} />
+          <Route path="/restaurant/:slug" element={<RestaurantDetail />} />
+        </Routes>
+        <Footer />
+      </RoleGuard>
     </div>
   );
 }

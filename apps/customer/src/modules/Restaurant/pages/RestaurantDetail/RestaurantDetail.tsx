@@ -8,6 +8,7 @@ import productService, { type ProductResponse } from '../../../../services/produ
 import { useLocation } from '../../../../contexts/LocationContext';
 import { useCart } from '../../../../contexts/CartContext';
 import ProductDetailModal from '../../components/ProductDetailModal';
+import { getProxiedImageUrl } from '../../../../utils/urlUtils';
 
 interface MenuSection {
     category: CategoryResponse;
@@ -156,7 +157,7 @@ const RestaurantDetail = () => {
 
     return (
         <div className="restaurant-detail-page">
-            <div className="restaurant-detail-hero" style={{ backgroundImage: `url(${restaurant.imageFileUrl || '/placeholder-restaurant.jpg'})` }}>
+            <div className="restaurant-detail-hero" style={{ backgroundImage: `url(${getProxiedImageUrl(restaurant.imageFileUrl) || '/placeholder-restaurant.jpg'})` }}>
                 <div className="restaurant-detail-overlay"></div>
                 <div className="restaurant-detail-info">
                     <div className="breadcrumbs-hero">
@@ -216,10 +217,10 @@ const RestaurantDetail = () => {
                             alt="No menu"
                             className="empty-state-image"
                         />
-                        <p className="empty-state-text">
-                            {t('restaurant.menuEmpty')}<br />
-                            {t('restaurant.menuEmptyHint')}
-                        </p>
+                        <div className="empty-state-content">
+                            <h3 className="empty-state-title">{t('restaurant.menuEmpty')}</h3>
+                            <p className="empty-state-hint">{t('restaurant.menuEmptyHint')}</p>
+                        </div>
                     </div>
                 ) : (
                     <div className="menu-container">
@@ -250,7 +251,7 @@ const RestaurantDetail = () => {
                                                 >
                                                     <div className="product-image-container">
                                                         <img
-                                                            src={product.imageUrl || 'https://via.placeholder.com/120'}
+                                                            src={getProxiedImageUrl(product.imageUrl) || 'https://via.placeholder.com/120'}
                                                             alt={product.name}
                                                             className="product-image"
                                                         />
@@ -312,9 +313,8 @@ const RestaurantDetail = () => {
                                 </section>
                             ))}
                     </div>
-                )
-                }
-            </main >
+                )}
+            </main>
 
             <ProductDetailModal
                 isOpen={!!selectedProduct}

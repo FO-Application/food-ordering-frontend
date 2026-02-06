@@ -27,7 +27,9 @@
         "noNotifications": "Chưa có thông báo nào",
         "switchBranch": "Đổi chi nhánh",
         "noOrders": "Chưa có đơn hàng",
-        "noOrdersDesc": "Các đơn hàng mới sẽ xuất hiện ở đây"
+        "noOrdersDesc": "Các đơn hàng mới sẽ xuất hiện ở đây",
+        "walletBalance": "Số dư ví",
+        "wallet": "Ví của tôi"
     },
     "orders": {
         "title": "Quản lý đơn hàng",

@@ -18,11 +18,29 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function (payload) {
     console.log('[firebase-messaging-sw.js] Received background message ', payload);
 
-    const notificationTitle = payload.notification.title;
+    const notificationTitle = payload.notification?.title || 'Thông báo mới';
+    const notificationBody = payload.notification?.body || '';
     const notificationOptions = {
-        body: payload.notification.body,
-        icon: '/vite.svg' // Fallback icon, replace with your app icon
+        body: notificationBody,
+        icon: '/vite.svg', // Fallback icon, replace with your app icon
+        data: payload.data // Pass any custom data
     };
 
+    // Show system notification
     self.registration.showNotification(notificationTitle, notificationOptions);
+
+    // Forward to all clients (main app) so it appears in the in-app notification dropdown
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+        clients.forEach(client => {
+            client.postMessage({
+                type: 'FCM_BACKGROUND_MESSAGE',
+                payload: {
+                    title: notificationTitle,
+                    body: notificationBody,
+                    data: payload.data,
+                    messageId: payload.messageId || Date.now().toString()
+                }
+            });
+        });
+    });
 });

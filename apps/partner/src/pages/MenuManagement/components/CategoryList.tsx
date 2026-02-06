@@ -122,7 +122,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ restaurantSlug, restaurantI
                             </div>
                             <div className="category-actions">
                                 <button
-                                    className="action-btn edit-btn"
+                                    className="menu-action-btn edit-btn"
                                     onClick={() => openEditModal(cat)}
                                     title={t('menu.edit')}
                                 >
@@ -132,7 +132,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ restaurantSlug, restaurantI
                                     </svg>
                                 </button>
                                 <button
-                                    className="action-btn delete-btn"
+                                    className="menu-action-btn delete-btn"
                                     onClick={() => handleDelete(cat.id)}
                                     title={t('menu.delete')}
                                 >

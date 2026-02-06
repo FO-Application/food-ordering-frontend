@@ -151,9 +151,21 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }: AuthModalProps) => {
                 setSuccessMessage('Đăng nhập thành công!');
                 console.log('[AuthModal] Login successful, role:', response.result.role);
 
+                // Redirect based on role
+                const role = response.result.role;
                 setTimeout(() => {
                     onClose();
-                    onLoginSuccess?.(); // Trigger callback
+                    onLoginSuccess?.();
+
+                    if (role === 'MERCHANT') {
+                        window.location.href = 'http://localhost:3003';
+                    } else if (role === 'SHIPPER') {
+                        window.location.href = 'http://localhost:3004';
+                    } else {
+                        // Default or Customer
+                        // If already on 3001/customer app, usually no redirect needed or reload
+                        window.location.reload();
+                    }
                 }, 500);
             }
         } catch (err: any) {

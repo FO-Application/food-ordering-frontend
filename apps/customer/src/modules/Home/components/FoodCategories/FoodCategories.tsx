@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import './FoodCategories.css';
 import cuisineService, { type CuisineResponse } from '../../../../services/cuisineService';
+import { getProxiedImageUrl } from '../../../../utils/urlUtils';
 
 const FoodCategories = () => {
     const { t } = useTranslation();
@@ -61,8 +62,9 @@ const FoodCategories = () => {
                     {categories.map((category) => (
                         <Link to={`/cuisines/${category.slug}`} key={category.id} className="category-card">
                             <div className="category-image-wrapper">
+
                                 <img
-                                    src={category.imageFileUrl || '/placeholder-food.jpg'}
+                                    src={getProxiedImageUrl(category.imageFileUrl) || '/placeholder-food.jpg'}
                                     alt={category.name}
                                     className="category-image"
                                     loading="lazy"

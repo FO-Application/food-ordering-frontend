@@ -1,5 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getMyOrders, getOrderById, cancelOrder, type OrderResponse } from '../../../../services/orderService';
+import notificationService from '../../../../services/notificationService';
+import { getProxiedImageUrl } from '../../../../utils/urlUtils';
+import ConfirmationModal from '../ConfirmationModal/ConfirmationModal';
+import ToastNotification from '../ToastNotification/ToastNotification';
 import './OrderHistorySidebar.css';
 
 interface OrderHistorySidebarProps {
@@ -26,14 +30,11 @@ const OrderHistorySidebar = ({ isOpen, onClose }: OrderHistorySidebarProps) => {
     const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(null);
     const [isCancelling, setIsCancelling] = useState(false);
 
-    // Fetch orders when sidebar opens
-    useEffect(() => {
-        if (isOpen) {
-            fetchOrders();
-        }
-    }, [isOpen]);
+    const [orderToCancel, setOrderToCancel] = useState<number | null>(null);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-    const fetchOrders = async () => {
+    const fetchOrders = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
@@ -45,7 +46,35 @@ const OrderHistorySidebar = ({ isOpen, onClose }: OrderHistorySidebarProps) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
+
+    // Fetch orders when sidebar opens
+    useEffect(() => {
+        if (isOpen) {
+            fetchOrders();
+        }
+    }, [isOpen, fetchOrders]);
+
+    // Subscribe to real-time notifications for order status updates
+    useEffect(() => {
+        const unsubscribe = notificationService.onMessage((message) => {
+            console.log('[OrderHistorySidebar] Notification received:', message.title);
+            // Check if notification is related to order status change
+            if (message.title.toLowerCase().includes('đơn') ||
+                message.title.toLowerCase().includes('order') ||
+                message.data?.type === 'ORDER_STATUS_CHANGED' ||
+                message.data?.orderId) {
+                console.log('[OrderHistorySidebar] Order-related notification, refreshing orders...');
+                fetchOrders();
+
+                // If viewing a specific order detail, refresh that too
+                if (selectedOrder && message.data?.orderId === String(selectedOrder.id)) {
+                    getOrderById(selectedOrder.id).then(setSelectedOrder).catch(console.error);
+                }
+            }
+        });
+        return () => unsubscribe();
+    }, [fetchOrders, selectedOrder]);
 
     const handleViewDetail = async (orderId: number) => {
         try {
@@ -56,21 +85,29 @@ const OrderHistorySidebar = ({ isOpen, onClose }: OrderHistorySidebarProps) => {
         }
     };
 
-    const handleCancelOrder = async (orderId: number) => {
-        if (!confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
+    const confirmCancelOrder = (orderId: number) => {
+        setOrderToCancel(orderId);
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmCancel = async () => {
+        if (!orderToCancel) return;
 
         setIsCancelling(true);
+        setIsConfirmOpen(false); // Close modal immediately or wait? Better close and show loading
+
         try {
-            await cancelOrder(orderId);
+            await cancelOrder(orderToCancel);
             // Refresh orders
-            fetchOrders();
+            await fetchOrders();
             setSelectedOrder(null);
-            alert('Đã hủy đơn hàng thành công!');
+            setToastMessage('Đã hủy đơn hàng thành công!');
         } catch (err: any) {
             console.error('Failed to cancel order:', err);
-            alert(err.response?.data?.message || 'Không thể hủy đơn hàng. Đơn hàng có thể đã được xử lý.');
+            setToastMessage(err.response?.data?.message || 'Không thể hủy đơn hàng. Đơn hàng có thể đã được xử lý.');
         } finally {
             setIsCancelling(false);
+            setOrderToCancel(null);
         }
     };
 
@@ -96,6 +133,25 @@ const OrderHistorySidebar = ({ isOpen, onClose }: OrderHistorySidebarProps) => {
 
     return (
         <>
+            {toastMessage && (
+                <ToastNotification
+                    message={toastMessage}
+                    type={toastMessage.includes('thành công') ? 'success' : 'error'}
+                    onClose={() => setToastMessage(null)}
+                />
+            )}
+
+            <ConfirmationModal
+                isOpen={isConfirmOpen}
+                title="Hủy đơn hàng"
+                message="Bạn có chắc muốn hủy đơn hàng này?"
+                onConfirm={handleConfirmCancel}
+                onCancel={() => { setIsConfirmOpen(false); setOrderToCancel(null); }}
+                confirmText="Xác nhận hủy"
+                cancelText="Quay lại"
+                isDangerous={true}
+            />
+
             <div className="order-history-overlay" onClick={onClose} />
             <div className="order-history-sidebar">
                 {/* Header */}
@@ -146,7 +202,7 @@ const OrderHistorySidebar = ({ isOpen, onClose }: OrderHistorySidebarProps) => {
                                 <h4>Nhà hàng</h4>
                                 <div className="order-restaurant-info">
                                     {selectedOrder.merchantLogo && (
-                                        <img src={selectedOrder.merchantLogo} alt="" />
+                                        <img src={getProxiedImageUrl(selectedOrder.merchantLogo)} alt="" />
                                     )}
                                     <span>{selectedOrder.merchantName}</span>
                                 </div>
@@ -210,7 +266,7 @@ const OrderHistorySidebar = ({ isOpen, onClose }: OrderHistorySidebarProps) => {
                             {selectedOrder.orderStatus === 'CREATED' && (
                                 <button
                                     className="cancel-order-btn"
-                                    onClick={() => handleCancelOrder(selectedOrder.id)}
+                                    onClick={() => confirmCancelOrder(selectedOrder.id)}
                                     disabled={isCancelling}
                                 >
                                     {isCancelling ? 'Đang hủy...' : 'Hủy đơn hàng'}
@@ -246,7 +302,7 @@ const OrderHistorySidebar = ({ isOpen, onClose }: OrderHistorySidebarProps) => {
                                     </div>
                                     <div className="order-card-restaurant">
                                         {order.merchantLogo && (
-                                            <img src={order.merchantLogo} alt="" className="restaurant-logo" />
+                                            <img src={getProxiedImageUrl(order.merchantLogo)} alt="" className="restaurant-logo" />
                                         )}
                                         <span>{order.merchantName}</span>
                                     </div>

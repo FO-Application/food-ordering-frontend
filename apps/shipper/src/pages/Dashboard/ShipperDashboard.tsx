@@ -107,11 +107,49 @@ const ShipperDashboard: React.FC = () => {
     };
 
     // Update location when online
+    // Update location and Poll Pending Orders when online
     useEffect(() => {
+        let interval: NodeJS.Timeout;
+
         if (isOnline) {
             updateLocation(location.lat, location.lon);
+
+            // Poll immediately
+            checkForPendingOrders();
+
+            // Then poll every 5 seconds
+            interval = setInterval(() => {
+                updateLocation(location.lat, location.lon);
+                checkForPendingOrders();
+            }, 5000);
         }
+
+        return () => {
+            if (interval) clearInterval(interval);
+        };
     }, [isOnline, location]);
+
+    const checkForPendingOrders = async () => {
+        if (currentOrder || pendingOrder) return; // Don't check if busy
+        try {
+            const res = await shipperService.getPendingOrders();
+            const orders = res.result;
+            if (orders && orders.length > 0) {
+                // Take the first one
+                const orderData = orders[0];
+                console.log('[Dashboard] Found pending order via Poll:', orderData);
+                setPendingOrder({
+                    orderId: String(orderData.orderId),
+                    pickupAddress: orderData.pickupAddress || 'Đang tải...',
+                    shippingFee: orderData.shippingFee ? String(orderData.shippingFee) : '0',
+                    lat: orderData.lat ? String(orderData.lat) : undefined,
+                    lon: orderData.lon ? String(orderData.lon) : undefined
+                });
+            }
+        } catch (e) {
+            // Be silent on error to not spam console
+        }
+    };
 
     const updateLocation = async (lat: number, lon: number) => {
         try {

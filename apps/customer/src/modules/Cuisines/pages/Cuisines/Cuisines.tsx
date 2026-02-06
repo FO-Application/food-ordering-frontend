@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './Cuisines.css';
 import restaurantService, { type RestaurantResponse } from '../../../../services/restaurantService';
+import { getProxiedImageUrl } from '../../../../utils/urlUtils';
 import { useLocation } from '../../../../contexts/LocationContext';
 
 
@@ -173,9 +174,10 @@ const Cuisines = () => {
                         ) : (
                             displayRestaurants.map((restaurant) => (
                                 <Link to={`/restaurant/${restaurant.slug}`} key={restaurant.id} className="restaurant-card">
+
                                     <div className="restaurant-image-wrapper">
                                         <img
-                                            src={restaurant.imageFileUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80'}
+                                            src={getProxiedImageUrl(restaurant.imageFileUrl) || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80'}
                                             alt={restaurant.name}
                                             className="restaurant-image"
                                             loading="lazy"
