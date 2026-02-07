@@ -8,7 +8,7 @@ export interface WalletResponse {
 export interface WalletTransactionResponse {
     id: number;
     amount: number;
-    transactionType: 'ORDER_INCOME' | 'WITHDRAW' | 'REFUND';
+    transactionType: 'ORDER_INCOME' | 'WITHDRAW' | 'DEPOSIT' | 'REFUND';
     description: string;
     createdAt: string;
     orderId: number;
@@ -79,6 +79,11 @@ const walletService = {
 
     withdraw: async (amount: number): Promise<APIResponse<WalletResponse>> => {
         const response = await api.post(`/wallet/withdraw?amount=${amount}`); // Changed from merchantClient to api
+        return response.data;
+    },
+
+    deposit: async (amount: number): Promise<APIResponse<WalletResponse>> => {
+        const response = await api.post(`/wallet/deposit?amount=${amount}`);
         return response.data;
     },
 

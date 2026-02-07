@@ -133,6 +133,10 @@ const WalletPage: React.FC = () => {
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
     const [withdrawAmount, setWithdrawAmount] = useState<number>(0);
 
+    // Deposit Modal State
+    const [showDepositModal, setShowDepositModal] = useState(false);
+    const [depositAmount, setDepositAmount] = useState<number>(0);
+
     const handleWithdraw = async () => {
         if (withdrawAmount <= 0) {
             alert("Số tiền rút không hợp lệ!");
@@ -160,6 +164,35 @@ const WalletPage: React.FC = () => {
             }
         } catch (error) {
             alert("Rút tiền thất bại. Vui lòng thử lại sau.");
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeposit = async () => {
+        if (depositAmount <= 0) {
+            alert("Số tiền nạp không hợp lệ!");
+            return;
+        }
+
+        if (!window.confirm(`Bạn có chắc muốn nạp ${formatCurrency(depositAmount)} vào ví không?`)) {
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const res = await walletService.deposit(depositAmount);
+            if (res.result) {
+                alert("Nạp tiền thành công!");
+                setBalance(res.result.balance);
+                setShowDepositModal(false);
+                setDepositAmount(0);
+                // Refresh transactions
+                fetchTransactions();
+            }
+        } catch (error) {
+            alert("Nạp tiền thất bại. Vui lòng thử lại sau.");
             console.error(error);
         } finally {
             setLoading(false);
@@ -347,7 +380,7 @@ const WalletPage: React.FC = () => {
                                     <span className="btn-subtext">Về ngân hàng</span>
                                 </div>
                             </button>
-                            <button className="action-btn deposit" title="Nạp tiền" onClick={() => alert('Tính năng nạp tiền đang bảo trì')}>
+                            <button className="action-btn deposit" title="Nạp tiền" onClick={() => setShowDepositModal(true)}>
                                 <div className="btn-icon-img">
                                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M19 5H5C3.89543 5 3 5.89543 3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -392,6 +425,36 @@ const WalletPage: React.FC = () => {
                             <button className="btn-secondary" onClick={() => setShowWithdrawModal(false)}>Hủy</button>
                             <button className="btn-primary" onClick={handleWithdraw} disabled={loading}>
                                 {loading ? 'Đang xử lý...' : 'Xác nhận rút tiền'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Deposit Modal */}
+            {showDepositModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h3>Nạp tiền vào ví</h3>
+                            <button onClick={() => setShowDepositModal(false)} className="close-btn">&times;</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label>Số tiền muốn nạp</label>
+                                <input
+                                    type="number"
+                                    value={depositAmount}
+                                    onChange={(e) => setDepositAmount(Number(e.target.value))}
+                                    className="modal-input"
+                                    placeholder="Nhập số tiền (VD: 500000)"
+                                />
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-secondary" onClick={() => setShowDepositModal(false)}>Hủy</button>
+                            <button className="btn-primary" onClick={handleDeposit} disabled={loading}>
+                                {loading ? 'Đang xử lý...' : 'Xác nhận nạp tiền'}
                             </button>
                         </div>
                     </div>
