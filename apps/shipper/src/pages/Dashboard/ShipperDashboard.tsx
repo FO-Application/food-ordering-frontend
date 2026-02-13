@@ -40,11 +40,38 @@ const ShipperDashboard: React.FC = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [pendingOrder, setPendingOrder] = useState<PendingOrder | null>(null);
     const [notificationEnabled, setNotificationEnabled] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     // Load profile and initialize notifications
     useEffect(() => {
         loadProfile();
         setupGeolocation();
+
+        // Best effort: gọi offline khi đóng tab/trình duyệt
+        const handleBeforeUnload = () => {
+            // Sử dụng sendBeacon vì fetch thường bị cancel khi unload
+            const token = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('accessToken='))
+                ?.split('=')[1];
+
+            // Fallback: gọi API goOffline bằng sendBeacon hoặc sync XHR
+            try {
+                navigator.sendBeacon('/api/v1/delivery/shippers/offline');
+                // Nếu sendBeacon không gửi được header auth, dùng sync XHR
+            } catch (e) {
+                // Best effort - không cần xử lý lỗi
+            }
+
+            // Gọi thêm qua service (có thể bị cancel nhưng vẫn cố gắng)
+            shipperService.goOffline().catch(() => { });
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
     }, []);
 
     // Initialize FCM when profile is loaded
@@ -59,9 +86,14 @@ const ShipperDashboard: React.FC = () => {
             const data = await shipperService.getProfile();
             setProfile(data.result);
 
-            // Check if vehicle registered
+            // Check if vehicle registered & restore online status from server
             try {
-                await shipperService.getShipperProfile();
+                const shipperProfile = await shipperService.getShipperProfile();
+                // Nếu server cho biết shipper đang online (VD: sau khi refresh trang)
+                // thì tự động bật lại trạng thái online trên FE
+                if (shipperProfile.result?.isOnline) {
+                    setIsOnline(true);
+                }
             } catch (err: any) {
                 // If 400/404/500 -> Likely not registered
                 console.warn("Shipper profile not found, redirecting to register...");
@@ -213,10 +245,15 @@ const ShipperDashboard: React.FC = () => {
             await shipperService.completeOrder(currentOrder.id);
             setCurrentOrder(null);
             setOrderDetail(null);
-            alert('Đã giao thành công!');
+            showToast('Đã giao hàng thành công! 🎉', 'success');
         } catch (err: any) {
-            alert('Lỗi hoàn thành');
+            showToast('Lỗi hoàn thành đơn hàng', 'error');
         }
+    };
+
+    const showToast = (message: string, type: 'success' | 'error') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
     };
 
     const handleLogout = () => {
@@ -238,6 +275,13 @@ const ShipperDashboard: React.FC = () => {
     return (
         <div className="mobile-wrapper">
             <div className="dashboard-container">
+                {/* Toast Notification */}
+                {toast && (
+                    <div className={`toast-notification ${toast.type}`}>
+                        <span className="toast-icon">{toast.type === 'success' ? '✅' : '❌'}</span>
+                        <span className="toast-message">{toast.message}</span>
+                    </div>
+                )}
                 <ShipperMap location={location} destination={destination} />
 
                 <Sidebar

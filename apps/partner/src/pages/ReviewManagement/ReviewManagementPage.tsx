@@ -167,10 +167,10 @@ const ReviewManagementPage: React.FC = () => {
                                 <div className="review-header">
                                     <div className="reviewer-info">
                                         <div className="reviewer-avatar">
-                                            {String(review.userId).slice(-2)}
+                                            {(review.userName || 'K').charAt(0).toUpperCase()}
                                         </div>
                                         <div>
-                                            <div className="reviewer-name">Khách hàng #{review.userId}</div>
+                                            <div className="reviewer-name">{review.userName || `Khách hàng #${review.userId}`}</div>
                                             <div className="review-date">{formatDate(review.createdAt)}</div>
                                         </div>
                                     </div>

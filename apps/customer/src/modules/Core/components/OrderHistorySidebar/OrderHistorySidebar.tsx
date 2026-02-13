@@ -4,6 +4,7 @@ import notificationService from '../../../../services/notificationService';
 import { getProxiedImageUrl } from '../../../../utils/urlUtils';
 import ConfirmationModal from '../ConfirmationModal/ConfirmationModal';
 import ToastNotification from '../ToastNotification/ToastNotification';
+import ReviewSection from '../ReviewSection/ReviewSection';
 import './OrderHistorySidebar.css';
 
 interface OrderHistorySidebarProps {
@@ -19,6 +20,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
     READY: { label: 'Sẵn sàng giao', color: '#06b6d4' },
     PICKED_UP: { label: 'Đang giao', color: '#ec4899' },
     DELIVERED: { label: 'Đã giao', color: '#10b981' },
+    COMPLETED: { label: 'Hoàn thành', color: '#10b981' },
     CANCELLED: { label: 'Đã hủy', color: '#ef4444' },
     PAID: { label: 'Đã thanh toán', color: '#10b981' },
 };
@@ -33,6 +35,7 @@ const OrderHistorySidebar = ({ isOpen, onClose }: OrderHistorySidebarProps) => {
     const [orderToCancel, setOrderToCancel] = useState<number | null>(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const [showReviewModal, setShowReviewModal] = useState(false);
 
     const fetchOrders = useCallback(async () => {
         setIsLoading(true);
@@ -272,6 +275,25 @@ const OrderHistorySidebar = ({ isOpen, onClose }: OrderHistorySidebarProps) => {
                                     {isCancelling ? 'Đang hủy...' : 'Hủy đơn hàng'}
                                 </button>
                             )}
+
+                            {/* Review Button - Only for COMPLETED/DELIVERED orders */}
+                            {(selectedOrder.orderStatus === 'COMPLETED' || selectedOrder.orderStatus === 'DELIVERED') && (
+                                selectedOrder.review ? (
+                                    <button
+                                        className="review-order-btn reviewed"
+                                        onClick={() => setShowReviewModal(true)}
+                                    >
+                                        Xem đánh giá của bạn
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="review-order-btn"
+                                        onClick={() => setShowReviewModal(true)}
+                                    >
+                                        Đánh giá đồ ăn
+                                    </button>
+                                )
+                            )}
                         </div>
                     ) : orders.length === 0 ? (
                         <div className="order-empty">
@@ -319,6 +341,40 @@ const OrderHistorySidebar = ({ isOpen, onClose }: OrderHistorySidebarProps) => {
                     )}
                 </div>
             </div>
+
+            {/* Review Modal - Rendered outside sidebar for proper overlay */}
+            {showReviewModal && selectedOrder && (
+                <>
+                    <div className="review-modal-overlay" onClick={() => setShowReviewModal(false)} />
+                    <div className="review-modal">
+                        <div className="review-modal-header">
+                            <h3>Đánh giá đơn hàng #{selectedOrder.id}</h3>
+                            <button className="review-modal-close" onClick={() => setShowReviewModal(false)}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="review-modal-restaurant">
+                            {selectedOrder.merchantLogo && (
+                                <img src={getProxiedImageUrl(selectedOrder.merchantLogo)} alt="" />
+                            )}
+                            <span>{selectedOrder.merchantName}</span>
+                        </div>
+                        <ReviewSection
+                            orderId={selectedOrder.id}
+                            existingReview={selectedOrder.review || null}
+                            onReviewSubmitted={async () => {
+                                const updated = await getOrderById(selectedOrder.id);
+                                setSelectedOrder(updated);
+                                setShowReviewModal(false);
+                                setToastMessage('Đánh giá thành công! Cảm ơn bạn 🎉');
+                            }}
+                        />
+                    </div>
+                </>
+            )}
         </>
     );
 };

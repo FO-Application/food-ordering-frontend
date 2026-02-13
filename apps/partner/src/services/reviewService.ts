@@ -5,6 +5,7 @@ import api from '../utils/axiosConfig';
 export interface ReviewResponse {
     id: number;
     userId: number;
+    userName: string;
     rating: number;
     comment: string;
     createdAt: string;

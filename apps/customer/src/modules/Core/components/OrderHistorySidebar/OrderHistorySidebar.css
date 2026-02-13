@@ -413,9 +413,145 @@
     cursor: not-allowed;
 }
 
+/* Review Button */
+.review-order-btn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border: 2px solid #6ee7b7;
+    border-radius: 12px;
+    color: #065f46;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 1rem;
+}
+
+.review-order-btn:hover {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border-color: #34d399;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.review-order-btn.reviewed {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border-color: #6ee7b7;
+    color: #065f46;
+}
+
+.review-order-btn.reviewed:hover {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border-color: #34d399;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+/* Review Modal */
+.review-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    z-index: 1100;
+    animation: fadeIn 0.2s ease;
+}
+
+.review-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 420px;
+    max-width: 90vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    z-index: 1101;
+    padding: 1.5rem;
+    animation: reviewModalIn 0.3s ease;
+}
+
+@keyframes reviewModalIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.review-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.review-modal-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.review-modal-close {
+    background: #f3f4f6;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.2s;
+}
+
+.review-modal-close:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.review-modal-restaurant {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.review-modal-restaurant img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.review-modal-restaurant span {
+    font-weight: 500;
+    color: #1f2937;
+}
+
 /* Mobile */
 @media (max-width: 480px) {
     .order-history-sidebar {
         width: 100%;
+    }
+
+    .review-modal {
+        width: 95vw;
+        padding: 1rem;
     }
 }

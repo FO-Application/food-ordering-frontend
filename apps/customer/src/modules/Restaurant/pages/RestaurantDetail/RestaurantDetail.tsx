@@ -9,6 +9,7 @@ import { useLocation } from '../../../../contexts/LocationContext';
 import { useCart } from '../../../../contexts/CartContext';
 import ProductDetailModal from '../../components/ProductDetailModal';
 import { getProxiedImageUrl } from '../../../../utils/urlUtils';
+import { getReviewsByMerchant, type ReviewResponse } from '../../../../services/reviewService';
 
 interface MenuSection {
     category: CategoryResponse;
@@ -27,6 +28,12 @@ const RestaurantDetail = () => {
     const [selectedProduct, setSelectedProduct] = useState<ProductResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [reviews, setReviews] = useState<ReviewResponse[]>([]);
+    const [reviewPage, setReviewPage] = useState(0);
+    const [hasMoreReviews, setHasMoreReviews] = useState(true);
+    const [loadingReviews, setLoadingReviews] = useState(false);
+    const [reviewStats, setReviewStats] = useState<{ avg: number; count: number }>({ avg: 0, count: 0 });
+    const [reviewFilter, setReviewFilter] = useState<string>('all');
 
     const getProductQuantity = (productId: number) => {
         if (!cart) return 0;
@@ -90,6 +97,9 @@ const RestaurantDetail = () => {
 
                 // 3. Fetch Menu (Categories + Products)
                 await loadMenu(foundRestaurant.id, foundRestaurant.slug);
+
+                // 4. Load reviews
+                await loadReviews(foundRestaurant.id, 0);
             }
 
         } catch (err: any) {
@@ -134,6 +144,32 @@ const RestaurantDetail = () => {
         }
     };
 
+    const loadReviews = async (restaurantId: number, page: number) => {
+        setLoadingReviews(true);
+        try {
+            const res = await getReviewsByMerchant(restaurantId, page, 5);
+            if (res.result) {
+                const newReviews = res.result.content || [];
+                const allReviews = page === 0 ? newReviews : [...reviews, ...newReviews];
+                setReviews(allReviews);
+                setHasMoreReviews(page + 1 < (res.result.totalPages || 0));
+                setReviewPage(page);
+
+                // Compute rating stats from loaded reviews
+                const totalCount = res.result.totalElements || allReviews.length;
+                if (allReviews.length > 0) {
+                    const sum = allReviews.reduce((acc: number, r: ReviewResponse) => acc + r.rating, 0);
+                    const avg = Math.round((sum / allReviews.length) * 10) / 10;
+                    setReviewStats({ avg, count: totalCount });
+                }
+            }
+        } catch (err) {
+            console.error('Failed to load reviews:', err);
+        } finally {
+            setLoadingReviews(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="restaurant-detail-loading">
@@ -166,7 +202,7 @@ const RestaurantDetail = () => {
                     <h1>{restaurant.name}</h1>
                     <p className="restaurant-address">{restaurant.address}</p>
                     <div className="restaurant-meta-badges">
-                        <span className="rating-badge">★ {restaurant.rating || 0} ({restaurant.ratingCount || 0}+ {t('restaurant.reviews')})</span>
+                        <span className="rating-badge">★ {reviewStats.avg || restaurant.ratingAverage || 0} ({reviewStats.count || restaurant.reviewCount || 0}+ {t('restaurant.reviews')})</span>
                     </div>
                     {userLocation?.address && (
                         <div className="restaurant-delivery-address">
@@ -315,6 +351,117 @@ const RestaurantDetail = () => {
                     </div>
                 )}
             </main>
+
+            {/* Customer Reviews Section */}
+            {restaurant && (
+                <section className="customer-reviews-section">
+                    <div className="reviews-section-header">
+                        <h2 className="reviews-section-title">Đánh giá từ khách hàng</h2>
+                        {(reviewStats.count || restaurant.reviewCount) > 0 && (
+                            <div className="reviews-section-summary">
+                                <span className="reviews-avg">★ {reviewStats.avg || restaurant.ratingAverage || 0}</span>
+                                <span className="reviews-count">{reviewStats.count || restaurant.reviewCount} đánh giá</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {reviews.length > 0 && (
+                        <div className="reviews-filter-bar">
+                            <button
+                                className={`review-filter-pill ${reviewFilter === 'all' ? 'active' : ''}`}
+                                onClick={() => setReviewFilter('all')}
+                            >
+                                Tất cả <span className="filter-count">{reviews.length}</span>
+                            </button>
+                            <button
+                                className={`review-filter-pill good ${reviewFilter === 'good' ? 'active' : ''}`}
+                                onClick={() => setReviewFilter('good')}
+                            >
+                                Tốt <span className="filter-count">{reviews.filter(r => r.rating >= 4).length}</span>
+                            </button>
+                            <button
+                                className={`review-filter-pill bad ${reviewFilter === 'bad' ? 'active' : ''}`}
+                                onClick={() => setReviewFilter('bad')}
+                            >
+                                Không tốt <span className="filter-count">{reviews.filter(r => r.rating <= 3).length}</span>
+                            </button>
+                            <span className="filter-divider"></span>
+                            {[5, 4, 3, 2, 1].map(star => (
+                                <button
+                                    key={star}
+                                    className={`review-filter-pill star ${reviewFilter === `star-${star}` ? 'active' : ''}`}
+                                    onClick={() => setReviewFilter(`star-${star}`)}
+                                >
+                                    {star}★ <span className="filter-count">{reviews.filter(r => r.rating === star).length}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {reviews.length === 0 && !loadingReviews ? (
+                        <div className="reviews-empty">
+                            <span className="reviews-empty-icon">💬</span>
+                            <p>Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+                        </div>
+                    ) : (() => {
+                        const filteredReviews = reviews.filter(r => {
+                            if (reviewFilter === 'good') return r.rating >= 4;
+                            if (reviewFilter === 'bad') return r.rating <= 3;
+                            if (reviewFilter.startsWith('star-')) return r.rating === parseInt(reviewFilter.split('-')[1]);
+                            return true;
+                        });
+                        return filteredReviews.length === 0 ? (
+                            <div className="reviews-empty">
+                                <p>Không có đánh giá nào phù hợp bộ lọc.</p>
+                            </div>
+                        ) : (
+                            <div className="reviews-list-customer">
+                                {filteredReviews.map(review => (
+                                    <div key={review.id} className="review-card-customer">
+                                        <div className="review-card-header">
+                                            <div className="review-avatar">
+                                                {(review.userName || 'K').charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="review-author-info">
+                                                <span className="review-author-name">{review.userName || 'Khách hàng'}</span>
+                                                <span className="review-author-date">
+                                                    {new Date(review.createdAt).toLocaleDateString('vi-VN', {
+                                                        day: '2-digit', month: '2-digit', year: 'numeric'
+                                                    })}
+                                                </span>
+                                            </div>
+                                            <div className="review-stars-inline">
+                                                {[1, 2, 3, 4, 5].map(star => (
+                                                    <span key={star} className={`star-inline ${star <= review.rating ? 'filled' : ''}`}>★</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        {review.comment && (
+                                            <p className="review-card-comment">{review.comment}</p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )
+                    })()}
+
+                    {loadingReviews && (
+                        <div className="reviews-loading">
+                            <div className="reviews-spinner"></div>
+                            <span>Đang tải đánh giá...</span>
+                        </div>
+                    )}
+
+                    {hasMoreReviews && reviews.length > 0 && !loadingReviews && (
+                        <button
+                            className="load-more-reviews-btn"
+                            onClick={() => restaurant && loadReviews(restaurant.id, reviewPage + 1)}
+                        >
+                            Xem thêm đánh giá
+                        </button>
+                    )}
+                </section>
+            )}
 
             <ProductDetailModal
                 isOpen={!!selectedProduct}

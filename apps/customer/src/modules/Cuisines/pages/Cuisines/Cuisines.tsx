@@ -82,7 +82,7 @@ const Cuisines = () => {
     // Filter displayed restaurants
     const displayRestaurants = restaurants.filter(r => {
         if (isHighRating) {
-            return (r.rating || 0) >= 4.0;
+            return (r.ratingAverage || 0) >= 4.0;
         }
         return true;
     });
@@ -193,8 +193,8 @@ const Cuisines = () => {
                                         <div className="restaurant-meta">
                                             <div className="restaurant-rating">
                                                 <span className="star-icon">★</span>
-                                                <span className="rating-value">{restaurant.rating || 0}</span>
-                                                <span className="rating-count">({restaurant.ratingCount || 0})</span>
+                                                <span className="rating-value">{restaurant.ratingAverage || 0}</span>
+                                                <span className="rating-count">({restaurant.reviewCount || 0})</span>
                                             </div>
                                             {restaurant.deliveryTime && (
                                                 <>

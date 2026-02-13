@@ -5,8 +5,8 @@ export interface RestaurantResponse {
     name: string;
     address: string;
     phone: string;
-    rating: number; // mapped from ratingAverage
-    ratingCount: number; // mapped from reviewCount
+    ratingAverage: number;
+    reviewCount: number;
     imageFileUrl: string; // Correct field name
     distance?: number;
     deliveryTime?: string;
