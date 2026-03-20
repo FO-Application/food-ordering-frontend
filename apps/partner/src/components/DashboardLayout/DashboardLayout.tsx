@@ -298,6 +298,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
             items: [
                 { path: '/dashboard/menu', icon: 'menu', label: t('sidebar.menu'), badge: null as string | null },
                 { path: '/dashboard/orders', icon: 'orders', label: t('sidebar.orders'), badge: newOrdersCount > 0 ? newOrdersCount.toString() : null },
+                { path: '/dashboard/schedule', icon: 'clock', label: t('sidebar.schedule'), badge: null as string | null },
             ]
         },
         {
@@ -361,6 +362,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, pageTitle }
                 return (
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                );
+            case 'clock':
+                return (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
                     </svg>
                 );
             case 'settings':

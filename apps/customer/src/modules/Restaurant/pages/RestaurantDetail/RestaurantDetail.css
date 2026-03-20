@@ -74,7 +74,7 @@
     gap: 12px;
 }
 
-.restaurant-meta-badges span {
+.restaurant-meta-badges>span {
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(8px);
     padding: 6px 12px;
@@ -717,5 +717,57 @@
 
     .review-card-comment {
         padding-left: 0;
+    }
+}
+
+/* ===== Schedule Badge (in hero) ===== */
+.schedule-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    backdrop-filter: blur(8px);
+}
+
+.schedule-badge.open {
+    background: rgba(16, 185, 129, 0.25);
+    color: #a7f3d0;
+}
+
+.schedule-badge.closed {
+    background: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+}
+
+.schedule-badge-dot {
+    width: 7px;
+    height: 7px;
+    min-width: 7px;
+    min-height: 7px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    animation: badge-pulse 2s ease-in-out infinite;
+}
+
+.schedule-badge.open .schedule-badge-dot {
+    background: #34d399;
+}
+
+.schedule-badge.closed .schedule-badge-dot {
+    background: #f87171;
+}
+
+@keyframes badge-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.35;
     }
 }

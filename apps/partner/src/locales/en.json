@@ -5,6 +5,7 @@
         "menu": "Menu",
         "reviews": "Reviews",
         "profile": "Restaurant Profile",
+        "schedule": "Schedule",
         "settings": "Settings"
     },
     "header": {
@@ -168,7 +169,9 @@
         "of": "of",
         "previous": "Previous",
         "next": "Next",
-        "selectRestaurant": "Please select a restaurant"
+        "selectRestaurant": "Please select a restaurant",
+        "yes": "Yes",
+        "no": "No"
     },
     "auth": {
         "login": "Login",
@@ -183,5 +186,17 @@
         "invalidEmail": "Invalid email format",
         "minLength": "Minimum {min} characters",
         "maxLength": "Maximum {max} characters"
+    },
+    "schedule": {
+        "title": "Operating Hours",
+        "desc": "Manage opening and closing hours for each day of the week",
+        "weeklySchedule": "Weekly Schedule",
+        "dayOfWeek": "Day",
+        "openTime": "Opening Time",
+        "closeTime": "Closing Time",
+        "addSchedule": "Add Schedule",
+        "noSchedule": "No schedule set",
+        "noScheduleDesc": "Add opening hours for each day of the week",
+        "saveAll": "Save All"
     }
 }

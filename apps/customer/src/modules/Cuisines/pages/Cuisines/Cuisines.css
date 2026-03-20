@@ -368,22 +368,101 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
+    padding: 80px 20px;
     text-align: center;
-    background: #fff;
+    background: transparent;
     border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+    box-shadow: none;
     grid-column: 1 / -1;
 }
 
 .empty-state-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-    opacity: 0.5;
+    width: 240px;
+    max-width: 100%;
+    margin-bottom: 24px;
 }
 
-.empty-state p {
-    color: #666;
-    font-size: 16px;
+.empty-state-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1c1c1c;
+    margin: 0 0 8px 0;
+}
+
+.empty-state-subtitle {
+    color: #676767;
+    font-size: 15px;
     margin: 0;
+}
+
+/* Restaurant Status Tag (open/closed) */
+.restaurant-status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.restaurant-status-tag.open {
+    color: #059669;
+}
+
+.restaurant-status-tag.closed {
+    color: #dc2626;
+}
+
+.status-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: status-blink 2s ease-in-out infinite;
+}
+
+.restaurant-status-tag.open .status-indicator {
+    background: #10b981;
+}
+
+.restaurant-status-tag.closed .status-indicator {
+    background: #ef4444;
+}
+
+@keyframes status-blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* Closed overlay tag on image */
+.closed-tag {
+    position: absolute;
+    top: 12px;
+    right: 0;
+    background: #ef4444;
+    color: #fff;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+
+/* Distance badge */
+.distance-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
 }

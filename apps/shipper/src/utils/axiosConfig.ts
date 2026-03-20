@@ -7,9 +7,17 @@ const api = axios.create({
         'Content-Type': 'application/json',
         'ngrok-skip-browser-warning': 'true',
     },
-    // CRITICAL: Enable credentials to allow browser to receive and store HttpOnly cookies
     withCredentials: true,
 });
+
+// --- Token Refresh State ---
+let isRefreshing = false;
+let refreshSubscribers: ((success: boolean) => void)[] = [];
+
+function onRefreshComplete(success: boolean) {
+    refreshSubscribers.forEach((cb) => cb(success));
+    refreshSubscribers = [];
+}
 
 // Request interceptor for logging
 api.interceptors.request.use(
@@ -19,60 +27,52 @@ api.interceptors.request.use(
         }
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
-// Response interceptor with auto-refresh token logic
+// Response interceptor with loop-proof refresh logic
 api.interceptors.response.use(
-    (response) => {
-        return response;
-    },
+    (response) => response,
     async (error) => {
         const originalRequest = error.config;
 
-        // Handle common error scenarios
-        if (error.response) {
-            const { status, data } = error.response;
-
-            // Auto Refresh Token Logic
-            if (status === 401 && !originalRequest._retry) {
-                originalRequest._retry = true;
-
-                try {
-                    console.log('[API] Access Token expired. Refreshing...');
-                    // Call refresh token API
-                    await api.post('/auth/refresh');
-                    console.log('[API] Token refresh successful. Retrying original request...');
-
-                    // Retry original request
-                    return api(originalRequest);
-                } catch (refreshError) {
-                    console.error('[API] Refresh token failed:', refreshError);
-                    // Clear auth state and redirect to login
-                    localStorage.removeItem('shipper_authenticated');
-                    window.location.href = '/login';
-                    return Promise.reject(refreshError);
-                }
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            // Don't try to refresh if this IS the refresh request
+            if (originalRequest.url === '/auth/refresh') {
+                return Promise.reject(error);
             }
 
-            switch (status) {
-                case 401:
-                    console.error('[API Error] Unauthorized - Please login again');
-                    break;
-                case 403:
-                    console.error('[API Error] Forbidden - Access denied');
-                    break;
-                case 500:
-                    console.error('[API Error] Server error:', data?.message || 'Internal server error');
-                    break;
-                default:
-                    console.error(`[API Error] ${status}:`, data?.message || error.message);
+            originalRequest._retry = true;
+
+            // If already refreshing, wait for the ongoing refresh to finish
+            if (isRefreshing) {
+                return new Promise((resolve, reject) => {
+                    refreshSubscribers.push((success: boolean) => {
+                        if (success) {
+                            resolve(api(originalRequest));
+                        } else {
+                            reject(error);
+                        }
+                    });
+                });
             }
-        } else if (error.request) {
-            // Network error - no response received
-            console.error('[API Error] Network error - Please check your connection');
+
+            isRefreshing = true;
+
+            try {
+                // Use plain axios (no interceptors) to avoid loop
+                await axios.post('/api/v1/auth/refresh', {}, { withCredentials: true });
+                isRefreshing = false;
+                onRefreshComplete(true);
+                return api(originalRequest);
+            } catch {
+                isRefreshing = false;
+                onRefreshComplete(false);
+                // Clear auth state and redirect to login
+                localStorage.removeItem('shipper_authenticated');
+                window.location.href = '/login';
+                return Promise.reject(error);
+            }
         }
 
         return Promise.reject(error);

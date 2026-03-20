@@ -84,7 +84,29 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const closeCart = useCallback(() => setIsCartOpen(false), []);
     const toggleCart = useCallback(() => setIsCartOpen(prev => !prev), []);
 
-    const addToCart = useCallback((restaurant: RestaurantInfo, product: ProductInfo, quantity: number = 1): boolean => {
+    const addToCart = useCallback((restaurant: RestaurantInfo, product: ProductInfo, quantity: number = 1, options?: CartItemOption[], notes?: string): boolean => {
+        const optionsTotal = (options || []).reduce((sum, opt) => sum + (opt.price || 0), 0);
+        const totalPrice = product.price + optionsTotal;
+
+        const buildItem = (): CartItem => ({
+            productId: product.id,
+            productName: product.name,
+            productImage: product.imageUrl || '',
+            unitPrice: product.price,
+            quantity,
+            selectedOptions: options && options.length > 0 ? options : undefined,
+            notes: notes || undefined,
+            totalPrice
+        });
+
+        // Helper: check if two option arrays are identical
+        const optionsMatch = (a?: CartItemOption[], b?: CartItemOption[]): boolean => {
+            const aIds = (a || []).map(o => o.id).sort((x, y) => x - y);
+            const bIds = (b || []).map(o => o.id).sort((x, y) => x - y);
+            if (aIds.length !== bIds.length) return false;
+            return aIds.every((id, i) => id === bIds[i]);
+        };
+
         setCart(prev => {
             // Different restaurant - replace cart
             if (prev && prev.restaurantId !== restaurant.id && prev.items.length > 0) {
@@ -93,13 +115,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                     restaurantName: restaurant.name,
                     restaurantSlug: restaurant.slug,
                     restaurantImage: restaurant.imageUrl,
-                    items: [{
-                        productId: product.id,
-                        productName: product.name,
-                        productImage: product.imageUrl || '',
-                        unitPrice: product.price,
-                        quantity
-                    }]
+                    items: [buildItem()]
                 };
             }
 
@@ -110,18 +126,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                     restaurantName: restaurant.name,
                     restaurantSlug: restaurant.slug,
                     restaurantImage: restaurant.imageUrl,
-                    items: [{
-                        productId: product.id,
-                        productName: product.name,
-                        productImage: product.imageUrl || '',
-                        unitPrice: product.price,
-                        quantity
-                    }]
+                    items: [buildItem()]
                 };
             }
 
-            // Same restaurant - check existing item
-            const existingIdx = prev.items.findIndex(item => item.productId === product.id);
+            // Same restaurant - check existing item with same product AND same options
+            const existingIdx = prev.items.findIndex(item =>
+                item.productId === product.id && optionsMatch(item.selectedOptions, options)
+            );
             if (existingIdx >= 0) {
                 const newItems = [...prev.items];
                 newItems[existingIdx].quantity += quantity;
@@ -130,13 +142,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
             return {
                 ...prev,
-                items: [...prev.items, {
-                    productId: product.id,
-                    productName: product.name,
-                    productImage: product.imageUrl || '',
-                    unitPrice: product.price,
-                    quantity
-                }]
+                items: [...prev.items, buildItem()]
             };
         });
 

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import productService, { type CategoryResponse, type ProductResponse, type ProductRequest } from '../../../services/productService';
 import LoadingSpinner from '../../../components/LoadingSpinner/LoadingSpinner';
+import { SecuredImage } from '../../../components/SecuredImage/SecuredImage';
 
 interface ProductListProps {
     restaurantSlug: string;
@@ -199,7 +200,7 @@ const ProductList: React.FC<ProductListProps> = ({ restaurantSlug }) => {
                 ) : (
                     products.map(prod => (
                         <div key={prod.id} className="product-card">
-                            <img
+                            <SecuredImage
                                 src={prod.imageUrl || 'https://via.placeholder.com/300x180?text=No+Image'}
                                 alt={prod.name}
                                 className="product-image"
@@ -302,7 +303,7 @@ const ProductList: React.FC<ProductListProps> = ({ restaurantSlug }) => {
                                 />
                                 {imagePreview && (
                                     <div style={{ marginTop: 12, borderRadius: 8, overflow: 'hidden' }}>
-                                        <img src={imagePreview} alt="Preview" style={{ width: '100%', maxHeight: 180, objectFit: 'cover' }} />
+                                        <SecuredImage src={imagePreview} alt="Preview" style={{ width: '100%', maxHeight: 180, objectFit: 'cover' }} />
                                     </div>
                                 )}
                             </div>

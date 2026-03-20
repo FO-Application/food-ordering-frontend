@@ -5,6 +5,7 @@
         "menu": "Thực đơn",
         "reviews": "Đánh giá",
         "profile": "Hồ sơ nhà hàng",
+        "schedule": "Lịch hoạt động",
         "settings": "Cài đặt"
     },
     "header": {
@@ -170,7 +171,9 @@
         "of": "/",
         "previous": "Trước",
         "next": "Sau",
-        "selectRestaurant": "Vui lòng chọn nhà hàng"
+        "selectRestaurant": "Vui lòng chọn nhà hàng",
+        "yes": "Có",
+        "no": "Không"
     },
     "auth": {
         "login": "Đăng nhập",
@@ -185,5 +188,17 @@
         "invalidEmail": "Email không hợp lệ",
         "minLength": "Tối thiểu {min} ký tự",
         "maxLength": "Tối đa {max} ký tự"
+    },
+    "schedule": {
+        "title": "Lịch hoạt động",
+        "desc": "Quản lý giờ mở cửa và đóng cửa theo từng ngày trong tuần",
+        "weeklySchedule": "Lịch theo tuần",
+        "dayOfWeek": "Thứ",
+        "openTime": "Giờ mở cửa",
+        "closeTime": "Giờ đóng cửa",
+        "addSchedule": "Thêm lịch",
+        "noSchedule": "Chưa có lịch hoạt động",
+        "noScheduleDesc": "Thêm giờ mở cửa cho từng ngày trong tuần",
+        "saveAll": "Lưu tất cả"
     }
 }

@@ -10,6 +10,7 @@ import OrderManagementPage from './pages/OrderManagement/OrderManagementPage';
 import ReviewManagementPage from './pages/ReviewManagement/ReviewManagementPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import WalletPage from './pages/Wallet/WalletPage';
+import SchedulePage from './pages/Schedule/SchedulePage';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
       <Route path="/dashboard/reviews" element={<ReviewManagementPage />} />
       <Route path="/dashboard/settings" element={<SettingsPage />} />
       <Route path="/dashboard/wallet" element={<WalletPage />} />
+      <Route path="/dashboard/schedule" element={<SchedulePage />} />
 
       {/* Default Dashboard Route */}
       <Route path="/dashboard" element={<PartnerDashboard />} />

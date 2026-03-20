@@ -113,6 +113,7 @@
         "loadingOptions": "Loading options...",
         "mandatory": "Required",
         "optional": "Optional",
+        "minSelection": "Min",
         "maxSelection": "Max",
         "outOfStock": "Out of stock",
         "noteForRestaurant": "Note for restaurant",

@@ -29,6 +29,7 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
+    const [orderNote, setOrderNote] = useState('');
 
     // Shipping fee estimate
     const BASE_SHIPPING_FEE = 15000;
@@ -108,6 +109,16 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
         setCreatedOrderId(null);
     }, [deliveryAddress, paymentMethod, cart]);
 
+    // Build description combining order-level note + per-item notes
+    const buildDescription = (): string | undefined => {
+        const parts: string[] = [];
+        if (orderNote.trim()) parts.push(orderNote.trim());
+        cart?.items.forEach(item => {
+            if (item.notes) parts.push(`${item.productName}: ${item.notes}`);
+        });
+        return parts.length > 0 ? parts.join(' | ') : undefined;
+    };
+
     const handleSubmit = async () => {
         if (!cart || cart.items.length === 0) {
             setError('Giỏ hàng trống');
@@ -144,7 +155,8 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
                         productId: item.productId,
                         quantity: item.quantity,
                         optionIds: item.selectedOptions?.map(opt => opt.id) || []
-                    }))
+                    })),
+                    descriptionOrder: buildDescription()
                 };
 
                 const result = await createOrder(orderRequest);
@@ -298,6 +310,26 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
                                 </div>
                             </label>
                         </div>
+                    </div>
+
+                    {/* Order Note */}
+                    <div className="checkout-section">
+                        <label className="checkout-label">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                            Ghi chú cho quán
+                        </label>
+                        <textarea
+                            className="checkout-note-input"
+                            placeholder="VD: Phở không hành, ít cay, để riêng nước..."
+                            value={orderNote}
+                            onChange={(e) => setOrderNote(e.target.value)}
+                            rows={2}
+                            maxLength={500}
+                            disabled={isLoading}
+                        />
                     </div>
 
                     {/* Order Summary */}

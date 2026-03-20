@@ -10,6 +10,7 @@ import { useCart } from '../../../../contexts/CartContext';
 import ProductDetailModal from '../../components/ProductDetailModal';
 import { getProxiedImageUrl } from '../../../../utils/urlUtils';
 import { getReviewsByMerchant, type ReviewResponse } from '../../../../services/reviewService';
+import scheduleService, { type ScheduleResponse } from '../../../../services/scheduleService';
 
 interface MenuSection {
     category: CategoryResponse;
@@ -34,6 +35,7 @@ const RestaurantDetail = () => {
     const [loadingReviews, setLoadingReviews] = useState(false);
     const [reviewStats, setReviewStats] = useState<{ avg: number; count: number }>({ avg: 0, count: 0 });
     const [reviewFilter, setReviewFilter] = useState<string>('all');
+    const [schedules, setSchedules] = useState<ScheduleResponse[]>([]);
 
     const getProductQuantity = (productId: number) => {
         if (!cart) return 0;
@@ -100,6 +102,17 @@ const RestaurantDetail = () => {
 
                 // 4. Load reviews
                 await loadReviews(foundRestaurant.id, 0);
+
+                // 5. Load schedules
+                try {
+                    const schedData = await scheduleService.getByRestaurant(foundRestaurant.slug);
+                    if (schedData?.result) {
+                        const sorted = [...schedData.result].sort((a: ScheduleResponse, b: ScheduleResponse) => a.dayOfWeek - b.dayOfWeek);
+                        setSchedules(sorted);
+                    }
+                } catch (err) {
+                    console.warn('Failed to load schedules:', err);
+                }
             }
 
         } catch (err: any) {
@@ -203,6 +216,27 @@ const RestaurantDetail = () => {
                     <p className="restaurant-address">{restaurant.address}</p>
                     <div className="restaurant-meta-badges">
                         <span className="rating-badge">★ {reviewStats.avg || restaurant.ratingAverage || 0} ({reviewStats.count || restaurant.reviewCount || 0}+ {t('restaurant.reviews')})</span>
+                        {(() => {
+                            if (schedules.length === 0) return null;
+                            const now = new Date();
+                            const currentDay = now.getDay() === 0 ? 7 : now.getDay();
+                            const currentTime = now.getHours() * 60 + now.getMinutes();
+                            const todaySchedule = schedules.find(s => s.dayOfWeek === currentDay);
+                            if (todaySchedule) {
+                                const [oh, om] = todaySchedule.openTime.split(':').map(Number);
+                                const [ch, cm] = todaySchedule.closeTime.split(':').map(Number);
+                                const openMin = oh * 60 + om;
+                                const closeMin = ch * 60 + cm;
+                                const isOpen = currentTime >= openMin && currentTime <= closeMin;
+                                return (
+                                    <span className={`schedule-badge ${isOpen ? 'open' : 'closed'}`}>
+                                        <span className="schedule-badge-dot"></span>
+                                        {isOpen ? `Đang mở · ${todaySchedule.closeTime.substring(0, 5)}` : `Đóng cửa · Mở ${todaySchedule.openTime.substring(0, 5)}`}
+                                    </span>
+                                );
+                            }
+                            return <span className="schedule-badge closed"><span className="schedule-badge-dot"></span>Hôm nay nghỉ</span>;
+                        })()}
                     </div>
                     {userLocation?.address && (
                         <div className="restaurant-delivery-address">
@@ -351,6 +385,7 @@ const RestaurantDetail = () => {
                     </div>
                 )}
             </main>
+
 
             {/* Customer Reviews Section */}
             {restaurant && (

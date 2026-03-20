@@ -14,6 +14,7 @@ export interface OrderRequest {
     deliveryLatitude: number;
     deliveryLongitude: number;
     items: OrderItemRequest[];
+    descriptionOrder?: string;
 }
 
 export interface OrderItemResponse {

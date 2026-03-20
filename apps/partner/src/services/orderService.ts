@@ -79,14 +79,14 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
 };
 
 export const ORDER_STATUS_COLORS: Record<string, string> = {
-    CREATED: '#3b82f6',
-    PAID: '#8b5cf6',
-    PREPARING: '#f59e0b',
-    READY: '#10b981',
-    WAITING_FOR_PICKUP: '#06b6d4',
-    DELIVERING: '#6366f1',
-    COMPLETED: '#22c55e',
-    CANCELED: '#ef4444'
+    CREATED: '#2563eb',
+    PAID: '#7c3aed',
+    PREPARING: '#d97706',
+    READY: '#059669',
+    WAITING_FOR_PICKUP: '#0891b2',
+    DELIVERING: '#4f46e5',
+    COMPLETED: '#16a34a',
+    CANCELED: '#dc2626'
 };
 
 // ==================== SERVICE ====================

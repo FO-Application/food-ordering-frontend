@@ -40,6 +40,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
         try {
             const res = await productService.getProductById(id);
             if (res.result) {
+                console.log("FETCHED PRODUCT DETAIL:", res.result);
                 setFullProduct(res.result);
             }
         } catch (err) {
@@ -49,25 +50,56 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
         }
     };
 
+    // Count quantity of an option in a group (used when minSelection > 1)
+    const getOptionQuantity = (groupId: number, optionId: number) => {
+        return (selectedOptions[groupId] || []).filter(id => id === optionId).length;
+    };
+
+    // Is simple checkbox selected (just checks if id is present once)
+    const isOptionChecked = (groupId: number, optionId: number) => {
+        return (selectedOptions[groupId] || []).includes(optionId);
+    };
+
+    // Toggle a checkbox on/off (for normal checkbox groups: maxSelection > 1 but each item selected once)
     const handleOptionToggle = (group: OptionGroupResponse, item: OptionItemResponse) => {
         setSelectedOptions(prev => {
             const currentSelected = prev[group.id] || [];
-            const isSelected = currentSelected.includes(item.id);
+            const alreadySelected = currentSelected.includes(item.id);
 
             if (group.maxSelection === 1) {
-                // Radio behavior
-                return { ...prev, [group.id]: isSelected ? [] : [item.id] };
+                // Radio: only one can be selected at a time
+                return { ...prev, [group.id]: alreadySelected ? [] : [item.id] };
             }
 
-            // Checkbox behavior
-            if (isSelected) {
+            if (alreadySelected) {
+                // Uncheck: remove all occurrences of this item
                 return { ...prev, [group.id]: currentSelected.filter(id => id !== item.id) };
             } else {
-                if (group.maxSelection > 0 && currentSelected.length >= group.maxSelection) {
-                    return prev;
-                }
+                // Check: add exactly one occurrence (not exceeding maxSelection)
+                if (group.maxSelection > 0 && currentSelected.length >= group.maxSelection) return prev;
                 return { ...prev, [group.id]: [...currentSelected, item.id] };
             }
+        });
+    };
+
+    // Increment quantity (adds one more occurrence of the same option ID)
+    const handleOptionIncrement = (group: OptionGroupResponse, item: OptionItemResponse) => {
+        setSelectedOptions(prev => {
+            const currentSelected = prev[group.id] || [];
+            if (group.maxSelection > 0 && currentSelected.length >= group.maxSelection) return prev;
+            return { ...prev, [group.id]: [...currentSelected, item.id] };
+        });
+    };
+
+    // Decrement quantity (removes last occurrence)
+    const handleOptionDecrement = (group: OptionGroupResponse, item: OptionItemResponse) => {
+        setSelectedOptions(prev => {
+            const currentSelected = prev[group.id] || [];
+            const idx = currentSelected.lastIndexOf(item.id);
+            if (idx === -1) return prev;
+            const next = [...currentSelected];
+            next.splice(idx, 1);
+            return { ...prev, [group.id]: next };
         });
     };
 
@@ -219,40 +251,81 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
                                 fullProduct.optionGroups.map(group => (
                                     <div key={group.id} className="option-group">
                                         <div className="option-group-header">
-                                            <h4>{group.name}</h4>
-                                            <span className="option-requirement">
-                                                {group.isMandatory ? t('product.mandatory') : t('product.optional')}
-                                                {group.maxSelection > 1 ? ` (${t('product.maxSelection')} ${group.maxSelection})` : ''}
-                                            </span>
+                                            <h4>
+                                                {group.name}
+                                                <span className="option-requirement">
+                                                    {group.isMandatory ? t('product.mandatory') : t('product.optional')}
+                                                    {(() => {
+                                                        const parts = [];
+                                                        if (group.minSelection > 0) parts.push(`${t('product.minSelection')} ${group.minSelection}`);
+                                                        if (group.maxSelection > 0 && group.maxSelection < 99) parts.push(`max ${group.maxSelection}`);
+                                                        return parts.length > 0 ? `, ${parts.join(', ')}` : '';
+                                                    })()}
+                                                </span>
+                                            </h4>
                                         </div>
 
                                         <div className="option-list">
                                             {group.options?.map(item => {
-                                                const isSelected = (selectedOptions[group.id] || []).includes(item.id);
+                                                const checked = isOptionChecked(group.id, item.id);
+                                                const qty = getOptionQuantity(group.id, item.id);
+                                                const groupTotalSelected = (selectedOptions[group.id] || []).length;
+                                                // Show +/- counter if the group requires selecting multiple of the same option
+                                                const showCounter = group.minSelection > 1;
+
                                                 return (
                                                     <label
                                                         key={item.id}
-                                                        className={`option-item ${isSelected ? 'selected' : ''}`}
+                                                        className={`option-item ${checked ? 'selected' : ''}`}
+                                                        onClick={(e) => { if (!item.isAvailable) e.preventDefault(); }}
                                                     >
                                                         <div className="option-control">
-                                                            <input
-                                                                type={group.maxSelection === 1 ? "radio" : "checkbox"}
-                                                                name={`group-${group.id}`}
-                                                                checked={isSelected}
-                                                                onChange={() => handleOptionToggle(group, item)}
-                                                                disabled={!item.isAvailable}
-                                                            />
+                                                            {group.maxSelection === 1 ? (
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`group-${group.id}`}
+                                                                    checked={checked}
+                                                                    onChange={() => handleOptionToggle(group, item)}
+                                                                    disabled={!item.isAvailable}
+                                                                />
+                                                            ) : (
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={checked}
+                                                                    onChange={() => handleOptionToggle(group, item)}
+                                                                    disabled={!item.isAvailable || (!checked && group.maxSelection > 0 && groupTotalSelected >= group.maxSelection)}
+                                                                />
+                                                            )}
                                                             <span className={`option-name ${!item.isAvailable ? 'disabled' : ''}`}>
                                                                 {item.name} {!item.isAvailable && `(${t('product.outOfStock')})`}
                                                             </span>
                                                         </div>
-                                                        <span className="option-price">
-                                                            {(item.priceAdjustment || 0) !== 0 ? (
-                                                                (item.priceAdjustment || 0) > 0
-                                                                    ? `+${(item.priceAdjustment || 0).toLocaleString('vi-VN')} ₫`
-                                                                    : `${(item.priceAdjustment || 0).toLocaleString('vi-VN')} ₫`
-                                                            ) : ''}
-                                                        </span>
+                                                        <div className="option-right">
+                                                            {showCounter && checked && (
+                                                                <div className="option-counter" onClick={e => e.preventDefault()}>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="option-qty-btn"
+                                                                        onClick={(e) => { e.preventDefault(); handleOptionDecrement(group, item); }}
+                                                                        disabled={qty <= 1}
+                                                                    >−</button>
+                                                                    <span className="option-qty-value">{qty}</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="option-qty-btn"
+                                                                        onClick={(e) => { e.preventDefault(); handleOptionIncrement(group, item); }}
+                                                                        disabled={group.maxSelection > 0 && groupTotalSelected >= group.maxSelection}
+                                                                    >+</button>
+                                                                </div>
+                                                            )}
+                                                            <span className="option-price">
+                                                                {(item.priceAdjustment || 0) !== 0 ? (
+                                                                    (item.priceAdjustment || 0) > 0
+                                                                        ? `+${(item.priceAdjustment || 0).toLocaleString('vi-VN')} ₫`
+                                                                        : `${(item.priceAdjustment || 0).toLocaleString('vi-VN')} ₫`
+                                                                ) : ''}
+                                                            </span>
+                                                        </div>
                                                     </label>
                                                 );
                                             })}

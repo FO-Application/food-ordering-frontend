@@ -77,11 +77,13 @@
 /* ===== STATUS BADGE ===== */
 .order-status-badge {
     display: inline-block;
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    font-weight: 700;
     color: white;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 /* ===== LINK BUTTONS ===== */
@@ -185,7 +187,6 @@
 }
 
 .detail-row span {
-    color: #6b7280;
     font-size: 0.875rem;
 }
 

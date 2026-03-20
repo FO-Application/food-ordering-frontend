@@ -562,12 +562,19 @@
 /* ===== FORM ROW ===== */
 .form-row {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 12px;
 }
 
+.form-row .form-group label {
+    white-space: nowrap;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
 .modal-sm {
-    max-width: 400px;
+    max-width: 440px;
 }
 
 /* ===== CATEGORY FILTER TABS ===== */

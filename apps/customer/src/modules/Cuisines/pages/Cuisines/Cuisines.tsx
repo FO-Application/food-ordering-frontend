@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './Cuisines.css';
 import restaurantService, { type RestaurantResponse } from '../../../../services/restaurantService';
+import scheduleService, { type ScheduleResponse } from '../../../../services/scheduleService';
 import { getProxiedImageUrl } from '../../../../utils/urlUtils';
 import { useLocation } from '../../../../contexts/LocationContext';
 
@@ -14,6 +15,7 @@ const Cuisines = () => {
     const [filterMode, setFilterMode] = useState<'all' | 'nearby'>('all');
     const [isHighRating, setIsHighRating] = useState(false);
     const [gpsLocation, setGpsLocation] = useState<{ lat: number; lon: number } | null>(null);
+    const [scheduleMap, setScheduleMap] = useState<Record<string, ScheduleResponse[]>>({});
 
     const displayName = slug
         ? slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
@@ -74,6 +76,24 @@ const Cuisines = () => {
             setLoading(false);
         }
     };
+
+    // Fetch schedules for loaded restaurants
+    useEffect(() => {
+        if (restaurants.length === 0) return;
+        const fetchSchedules = async () => {
+            const map: Record<string, ScheduleResponse[]> = {};
+            await Promise.all(
+                restaurants.map(async (r) => {
+                    try {
+                        const res = await scheduleService.getByRestaurant(r.slug);
+                        if (res?.result) map[r.slug] = res.result;
+                    } catch { /* ignore */ }
+                })
+            );
+            setScheduleMap(map);
+        };
+        fetchSchedules();
+    }, [restaurants]);
 
     const toggleHighRating = () => {
         setIsHighRating(!isHighRating);
@@ -168,8 +188,9 @@ const Cuisines = () => {
                     <div className="restaurant-list">
                         {displayRestaurants.length === 0 ? (
                             <div className="empty-state">
-                                <div className="empty-state-icon">🍽️</div>
-                                <p>Không tìm thấy nhà hàng nào phù hợp.</p>
+                                <img src="https://food.grab.com/static/images/chicken-bowl.svg" alt="Empty" className="empty-state-icon" />
+                                <h3 className="empty-state-title">Rất tiếc, hiện không có nhà hàng nào</h3>
+                                <p className="empty-state-subtitle">Vui lòng làm mới trang để giải quyết sự cố.</p>
                             </div>
                         ) : (
                             displayRestaurants.map((restaurant) => (
@@ -196,6 +217,37 @@ const Cuisines = () => {
                                                 <span className="rating-value">{restaurant.ratingAverage || 0}</span>
                                                 <span className="rating-count">({restaurant.reviewCount || 0})</span>
                                             </div>
+                                            {(() => {
+                                                const scheds = scheduleMap[restaurant.slug];
+                                                if (!scheds || scheds.length === 0) return null;
+                                                const now = new Date();
+                                                const dow = now.getDay() === 0 ? 7 : now.getDay();
+                                                const mins = now.getHours() * 60 + now.getMinutes();
+                                                const today = scheds.find(s => s.dayOfWeek === dow);
+                                                if (today) {
+                                                    const [oh, om] = today.openTime.split(':').map(Number);
+                                                    const [ch, cm] = today.closeTime.split(':').map(Number);
+                                                    const isOpen = mins >= oh * 60 + om && mins <= ch * 60 + cm;
+                                                    return (
+                                                        <>
+                                                            <span className="meta-separator">•</span>
+                                                            <span className={`restaurant-status-tag ${isOpen ? 'open' : 'closed'}`}>
+                                                                <span className="status-indicator"></span>
+                                                                {isOpen ? 'Đang mở' : 'Đóng cửa'}
+                                                            </span>
+                                                        </>
+                                                    );
+                                                }
+                                                return (
+                                                    <>
+                                                        <span className="meta-separator">•</span>
+                                                        <span className="restaurant-status-tag closed">
+                                                            <span className="status-indicator"></span>
+                                                            Nghỉ
+                                                        </span>
+                                                    </>
+                                                );
+                                            })()}
                                             {restaurant.deliveryTime && (
                                                 <>
                                                     <span className="meta-separator">•</span>

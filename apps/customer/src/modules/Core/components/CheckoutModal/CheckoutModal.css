@@ -296,6 +296,36 @@
     color: #92400e;
 }
 
+/* Order Note */
+.checkout-note-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    color: #374151;
+    background: #f9fafb;
+}
+
+.checkout-note-input:focus {
+    outline: none;
+    border-color: #10b981;
+    background: #ffffff;
+}
+
+.checkout-note-input::placeholder {
+    color: #9ca3af;
+}
+
+.checkout-note-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* Status Message */
 .checkout-status {
     display: flex;

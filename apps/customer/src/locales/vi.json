@@ -113,6 +113,7 @@
         "loadingOptions": "Đang tải tùy chọn...",
         "mandatory": "Bắt buộc",
         "optional": "Tùy chọn",
+        "minSelection": "Tối thiểu",
         "maxSelection": "Tối đa",
         "outOfStock": "Hết hàng",
         "noteForRestaurant": "Ghi chú cho quán",
