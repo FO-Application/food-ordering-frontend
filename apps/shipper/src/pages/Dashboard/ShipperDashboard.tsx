@@ -14,12 +14,20 @@ interface OrderState {
 
 interface OrderDetail {
     id: number;
-    restaurantName: string;
-    restaurantAddress: string;
+    merchantId: number;
+    merchantName: string;
     customerName: string;
-    customerAddress: string;
-    totalAmount: number;
+    customerPhone: string;
+    deliveryAddress: string;
+    grandTotal: number;
     items: any[];
+}
+
+interface RestaurantDetail {
+    id: number;
+    name: string;
+    address: string;
+    phone: string;
 }
 
 interface PendingOrder {
@@ -36,6 +44,7 @@ const ShipperDashboard: React.FC = () => {
     const [location, setLocation] = useState({ lat: 21.028511, lon: 105.854444 });
     const [currentOrder, setCurrentOrder] = useState<OrderState | null>(null);
     const [orderDetail, setOrderDetail] = useState<OrderDetail | null>(null);
+    const [restaurantDetail, setRestaurantDetail] = useState<RestaurantDetail | null>(null);
     const [profile, setProfile] = useState<any>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [pendingOrder, setPendingOrder] = useState<PendingOrder | null>(null);
@@ -207,9 +216,19 @@ const ShipperDashboard: React.FC = () => {
     const fetchOrderDetails = async (id: number) => {
         try {
             const data = await shipperService.getOrderDetails(id);
-            setOrderDetail(data.result);
+            const orderRes = data.result;
+            setOrderDetail(orderRes);
+
+            if (orderRes?.merchantId) {
+                try {
+                    const restData = await shipperService.getRestaurantById(orderRes.merchantId);
+                    setRestaurantDetail(restData.result);
+                } catch (restErr) {
+                    console.error("Fetch restaurant details failed", restErr);
+                }
+            }
         } catch (error) {
-            console.error("Fetch details failed", error);
+            console.error("Fetch order details failed", error);
         }
     };
 
@@ -245,6 +264,7 @@ const ShipperDashboard: React.FC = () => {
             await shipperService.completeOrder(currentOrder.id);
             setCurrentOrder(null);
             setOrderDetail(null);
+            setRestaurantDetail(null);
             showToast('Đã giao hàng thành công! 🎉', 'success');
         } catch (err: any) {
             showToast('Lỗi hoàn thành đơn hàng', 'error');
@@ -375,18 +395,40 @@ const ShipperDashboard: React.FC = () => {
                                     </span>
                                     <span className="order-price">#{currentOrder.id}</span>
                                 </div>
-                                <div className="location-row">
-                                    <div className="dot start"></div>
-                                    <div className="addr-text">
-                                        {orderDetail.restaurantName}
-                                        <br /><small>{orderDetail.restaurantAddress}</small>
+                                <div className="location-row" style={{ alignItems: 'flex-start' }}>
+                                    <div className="dot start" style={{ marginTop: '6px' }}></div>
+                                    <div className="addr-text" style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: '600' }}>{orderDetail.merchantName}</div>
+                                        <div style={{ color: '#4b5563', fontSize: '0.9rem', marginBottom: '4px' }}>
+                                            {restaurantDetail?.address || 'Đang tải địa chỉ...'}
+                                        </div>
+                                        {restaurantDetail?.phone && (
+                                            <a
+                                                href={`tel:${restaurantDetail.phone}`}
+                                                className="tel-link"
+                                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#10b981', textDecoration: 'none', fontWeight: '500', fontSize: '0.9rem' }}
+                                            >
+                                                📞 {restaurantDetail.phone}
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="location-row">
-                                    <div className="dot end"></div>
-                                    <div className="addr-text">
-                                        {orderDetail.customerName}
-                                        <br /><small>{orderDetail.customerAddress}</small>
+                                <div className="location-row" style={{ alignItems: 'flex-start' }}>
+                                    <div className="dot end" style={{ marginTop: '6px' }}></div>
+                                    <div className="addr-text" style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: '600' }}>{orderDetail.customerName}</div>
+                                        <div style={{ color: '#4b5563', fontSize: '0.9rem', marginBottom: '4px' }}>
+                                            {orderDetail.deliveryAddress}
+                                        </div>
+                                        {orderDetail.customerPhone && (
+                                            <a
+                                                href={`tel:${orderDetail.customerPhone}`}
+                                                className="tel-link"
+                                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#3b82f6', textDecoration: 'none', fontWeight: '500', fontSize: '0.9rem' }}
+                                            >
+                                                📞 {orderDetail.customerPhone}
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             </div>

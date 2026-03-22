@@ -22,6 +22,7 @@ export interface ProductResponse {
     name: string;
     description: string;
     price: number;
+    originalPrice?: number;
     imageUrl?: string;
     isAvailable: boolean;
     categoryId: number;

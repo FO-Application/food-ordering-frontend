@@ -1,13 +1,27 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminLoginPage from './pages/AdminLoginPage/AdminLoginPage';
+import AdminLayout from './components/AdminLayout/AdminLayout';
+import DashboardPage from './pages/DashboardPage/DashboardPage';
+import UsersPage from './pages/UsersPage/UsersPage';
+import RestaurantsPage from './pages/RestaurantsPage/RestaurantsPage';
+import OrdersPage from './pages/OrdersPage/OrdersPage';
+import TransactionsPage from './pages/TransactionsPage/TransactionsPage';
+import SettingsPage from './pages/SettingsPage/SettingsPage';
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<AdminLoginPage />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/login" element={<AdminLoginPage />} />
-      {/* Dashboard and other admin routes will be added here */}
-      <Route path="/dashboard" element={<div>Admin Dashboard - Coming Soon</div>} />
+      
+      <Route element={<AdminLayout />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/restaurants" element={<RestaurantsPage />} />
+        <Route path="/users" element={<UsersPage />} />
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/transactions" element={<TransactionsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Route>
     </Routes>
   );
 }

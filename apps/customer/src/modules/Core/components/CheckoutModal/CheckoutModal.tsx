@@ -3,6 +3,7 @@ import { useCart } from '../../../../contexts/CartContext';
 import { useLocation } from '../../../../contexts/LocationContext';
 import { createOrder, type OrderRequest } from '../../../../services/orderService';
 import { createZaloPayPayment, queryZaloPayStatus } from '../../../../services/paymentService';
+import restaurantService from '../../../../services/restaurantService';
 import './CheckoutModal.css';
 import { getProxiedImageUrl } from '../../../../utils/urlUtils';
 
@@ -18,6 +19,43 @@ type PaymentMethod = 'COD' | 'ZALOPAY';
 const COD_LOGO = 'https://cdn-icons-png.flaticon.com/512/2331/2331970.png';
 const ZALOPAY_LOGO = 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png';
 
+// Distance calculation logic matching backend
+const EARTH_RADIUS = 6371;
+const WINDING_FACTOR = 1.3;
+
+const calculateEstimatedDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
+    
+    const toRadians = (deg: number) => deg * (Math.PI / 180);
+    
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+    
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const airDistance = EARTH_RADIUS * c;
+    const estimatedDistance = airDistance * WINDING_FACTOR;
+    
+    return Math.round(estimatedDistance * 10.0) / 10.0;
+};
+
+const calculateShippingFee = (distanceKm: number): number => {
+    const baseFee = 15000;
+    const baseDistance = 2.0;
+    const pricePerKm = 5000;
+    
+    if (distanceKm <= baseDistance) {
+        return baseFee;
+    } else {
+        const extraKm = distanceKm - baseDistance;
+        const extraFee = pricePerKm * extraKm;
+        return baseFee + extraFee;
+    }
+};
+
 const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
     const { cart, getCartTotal, clearCart } = useCart();
     const { location: userLocation } = useLocation();
@@ -31,9 +69,42 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
     const [orderNote, setOrderNote] = useState('');
 
-    // Shipping fee estimate
+    // Shipping fee estimate state
     const BASE_SHIPPING_FEE = 15000;
-    const [estimatedShippingFee] = useState(BASE_SHIPPING_FEE);
+    const [estimatedShippingFee, setEstimatedShippingFee] = useState(BASE_SHIPPING_FEE);
+    const [restaurantCoords, setRestaurantCoords] = useState<{lat: number, lon: number} | null>(null);
+
+    // Fetch restaurant coordinates when modal opens
+    useEffect(() => {
+        if (isOpen && cart?.restaurantId) {
+            restaurantService.getRestaurantById(cart.restaurantId)
+                .then(res => {
+                    if (res.result?.latitude && res.result?.longitude) {
+                        setRestaurantCoords({
+                            lat: res.result.latitude,
+                            lon: res.result.longitude
+                        });
+                    }
+                })
+                .catch(err => console.error("Failed to fetch restaurant location for shipping fee:", err));
+        } else {
+            setRestaurantCoords(null);
+        }
+    }, [isOpen, cart?.restaurantId]);
+
+    // Recalculate shipping fee whenever coordinates change
+    useEffect(() => {
+        if (restaurantCoords && coordinates.lat !== 0 && coordinates.lon !== 0) {
+            const distance = calculateEstimatedDistance(
+                restaurantCoords.lat, restaurantCoords.lon,
+                coordinates.lat, coordinates.lon
+            );
+            const fee = calculateShippingFee(distance);
+            setEstimatedShippingFee(fee);
+        } else {
+            setEstimatedShippingFee(BASE_SHIPPING_FEE);
+        }
+    }, [restaurantCoords, coordinates]);
 
     // Initialize address from LocationContext when modal opens
     useEffect(() => {
@@ -375,7 +446,7 @@ const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
                         {isLoading ? (
                             <>
                                 <span className="loading-spinner" />
-                                Đang xử lý...
+                                {statusMessage || 'Đang xử lý...'}
                             </>
                         ) : paymentMethod === 'ZALOPAY' ? (
                             `Thanh toán ZaloPay • ${grandTotal.toLocaleString('vi-VN')} ₫`

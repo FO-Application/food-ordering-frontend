@@ -29,7 +29,8 @@ export interface DailyStatResponse {
 
 const walletService = {
     getMyWallet: async (): Promise<APIResponse<WalletResponse>> => {
-        const response = await api.get('/wallet');
+        const restaurantId = localStorage.getItem('currentRestaurantId');
+        const response = await api.get(`/wallet?restaurantId=${restaurantId}`);
         return response.data;
     },
 
@@ -41,6 +42,8 @@ const walletService = {
         type?: string
     ): Promise<APIResponse<any>> => {
         const params = new URLSearchParams();
+        const restaurantId = localStorage.getItem('currentRestaurantId');
+        if (restaurantId) params.append('restaurantId', restaurantId);
         params.append('page', String(page));
         params.append('size', String(size));
         if (startDate) params.append('startDate', startDate);
@@ -54,6 +57,8 @@ const walletService = {
     exportTransactions: async (startDate?: string, endDate?: string, type?: string) => {
         try {
             const params = new URLSearchParams();
+            const restaurantId = localStorage.getItem('currentRestaurantId');
+            if (restaurantId) params.append('restaurantId', restaurantId);
             if (startDate) params.append('startDate', startDate);
             if (endDate) params.append('endDate', endDate);
             if (type) params.append('type', type);
@@ -78,17 +83,20 @@ const walletService = {
     },
 
     withdraw: async (amount: number): Promise<APIResponse<WalletResponse>> => {
-        const response = await api.post(`/wallet/withdraw?amount=${amount}`); // Changed from merchantClient to api
+        const restaurantId = localStorage.getItem('currentRestaurantId');
+        const response = await api.post(`/wallet/withdraw?restaurantId=${restaurantId}&amount=${amount}`); // Changed from merchantClient to api
         return response.data;
     },
 
     deposit: async (amount: number): Promise<APIResponse<WalletResponse>> => {
-        const response = await api.post(`/wallet/deposit?amount=${amount}`);
+        const restaurantId = localStorage.getItem('currentRestaurantId');
+        const response = await api.post(`/wallet/deposit?restaurantId=${restaurantId}&amount=${amount}`);
         return response.data;
     },
 
     getDailyStats: async (): Promise<APIResponse<DailyStatResponse[]>> => {
-        const response = await api.get('/wallet/statistics');
+        const restaurantId = localStorage.getItem('currentRestaurantId');
+        const response = await api.get(`/wallet/statistics?restaurantId=${restaurantId}`);
         return response.data;
     }
 };

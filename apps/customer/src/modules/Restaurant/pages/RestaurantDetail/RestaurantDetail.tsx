@@ -227,7 +227,16 @@ const RestaurantDetail = () => {
                                 const [ch, cm] = todaySchedule.closeTime.split(':').map(Number);
                                 const openMin = oh * 60 + om;
                                 const closeMin = ch * 60 + cm;
-                                const isOpen = currentTime >= openMin && currentTime <= closeMin;
+                                
+                                let isOpen = false;
+                                if (openMin === closeMin) {
+                                    isOpen = true; // 24 hours
+                                } else if (openMin < closeMin) {
+                                    isOpen = currentTime >= openMin && currentTime <= closeMin;
+                                } else {
+                                    isOpen = currentTime >= openMin || currentTime <= closeMin;
+                                }
+                                
                                 return (
                                     <span className={`schedule-badge ${isOpen ? 'open' : 'closed'}`}>
                                         <span className="schedule-badge-dot"></span>
@@ -332,7 +341,12 @@ const RestaurantDetail = () => {
                                                             <p className="product-desc">{product.description}</p>
                                                         </div>
                                                         <div className="product-info-footer">
-                                                            <p className="product-price">{product.price.toLocaleString('vi-VN')} ₫</p>
+                                                            <div className="product-price-wrapper">
+                                                                <p className="product-price">{product.price.toLocaleString('vi-VN')} ₫</p>
+                                                                {product.originalPrice && product.originalPrice > product.price && (
+                                                                    <span className="product-original-price">{product.originalPrice.toLocaleString('vi-VN')} ₫</span>
+                                                                )}
+                                                            </div>
 
                                                             {getProductQuantity(product.id) > 0 ? (
                                                                 <div className="product-qty-control-inline" onClick={(e) => e.stopPropagation()}>

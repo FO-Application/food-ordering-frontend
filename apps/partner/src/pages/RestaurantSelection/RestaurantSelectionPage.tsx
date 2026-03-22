@@ -56,7 +56,11 @@ const RestaurantSelectionPage: React.FC = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleSelectRestaurant = (id: number) => {
+    const handleSelectRestaurant = (id: number, isActive: boolean) => {
+        if (!isActive) {
+            alert('Nhà hàng của bạn chưa được kích hoạt hoặc đang bị khóa. Vui lòng chờ phê duyệt từ Ban quản trị!');
+            return;
+        }
         localStorage.setItem('currentRestaurantId', id.toString());
         navigate('/dashboard');
     };
@@ -191,8 +195,8 @@ const RestaurantSelectionPage: React.FC = () => {
                             {restaurants.map((restaurant) => (
                                 <div
                                     key={restaurant.id}
-                                    className="branch-card restaurant-card"
-                                    onClick={() => handleSelectRestaurant(restaurant.id)}
+                                    className={`branch-card restaurant-card ${!restaurant.isActive ? 'disabled-card' : ''}`}
+                                    onClick={() => handleSelectRestaurant(restaurant.id, restaurant.isActive)}
                                 >
                                     <div className="card-thumbnail">
                                         <SecuredImage
@@ -209,7 +213,7 @@ const RestaurantSelectionPage: React.FC = () => {
                                             }}
                                         />
                                         <span className={`status-badge ${restaurant.isActive ? 'active' : 'inactive'}`} style={{ zIndex: 1 }}>
-                                            {restaurant.isActive ? 'Đang hoạt động' : 'Tạm ngưng'}
+                                            {restaurant.isActive ? 'Đang hoạt động' : 'Chờ phê duyệt'}
                                         </span>
                                     </div>
                                     <div className="card-body">
@@ -223,8 +227,8 @@ const RestaurantSelectionPage: React.FC = () => {
                                                 <span>{restaurant.ratingAverage?.toFixed(1) || '0.0'}</span>
                                                 <span className="review-count">({restaurant.reviewCount || 0})</span>
                                             </div>
-                                            <button className="view-btn">
-                                                Quản lý
+                                            <button className="view-btn" disabled={!restaurant.isActive}>
+                                                {restaurant.isActive ? 'Quản lý' : 'Đang chờ'}
                                                 <svg viewBox="0 0 20 20" fill="currentColor">
                                                     <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                                                 </svg>

@@ -373,6 +373,35 @@
     border-color: var(--fastbite-primary);
 }
 
+/* Disabled Card */
+.disabled-card {
+    opacity: 0.8;
+    cursor: not-allowed;
+    background-color: #f9fafb;
+}
+
+.disabled-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--fastbite-border);
+}
+
+.disabled-card .card-thumbnail {
+    filter: grayscale(80%);
+}
+
+.disabled-card .view-btn[disabled] {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.disabled-card .view-btn[disabled]:hover {
+    background: #f3f4f6;
+    color: #9ca3af;
+}
+
 /* Add Card */
 .add-card {
     min-height: 380px;

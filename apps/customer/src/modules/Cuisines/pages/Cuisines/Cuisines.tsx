@@ -193,17 +193,50 @@ const Cuisines = () => {
                                 <p className="empty-state-subtitle">Vui lòng làm mới trang để giải quyết sự cố.</p>
                             </div>
                         ) : (
-                            displayRestaurants.map((restaurant) => (
-                                <Link to={`/restaurant/${restaurant.slug}`} key={restaurant.id} className="restaurant-card">
+                            displayRestaurants.map((restaurant) => {
+                                let isOpen = false;
+                                let pendingScheduleFetch = !scheduleMap[restaurant.slug];
 
+                                const scheds = scheduleMap[restaurant.slug];
+                                if (scheds && scheds.length > 0) {
+                                    const now = new Date();
+                                    const dow = now.getDay() === 0 ? 7 : now.getDay();
+                                    const mins = now.getHours() * 60 + now.getMinutes();
+                                    const today = scheds.find(s => s.dayOfWeek === dow);
+                                    if (today) {
+                                        const [oh, om] = today.openTime.split(':').map(Number);
+                                        const [ch, cm] = today.closeTime.split(':').map(Number);
+                                        const openMins = oh * 60 + om;
+                                        const closeMins = ch * 60 + cm;
+                                        
+                                        if (openMins === closeMins) {
+                                            isOpen = true; // Open 24h
+                                        } else if (openMins < closeMins) {
+                                            isOpen = mins >= openMins && mins <= closeMins;
+                                        } else {
+                                            // Spans midnight (e.g. 10:00 to 02:00)
+                                            isOpen = mins >= openMins || mins <= closeMins;
+                                        }
+                                    }
+                                }
+
+                                const isUnClickable = !restaurant.isActive || (!pendingScheduleFetch && (!scheds || scheds.length === 0 || !isOpen));
+
+                                const CardComponent = isUnClickable ? 'div' : Link;
+                                const cardProps = isUnClickable 
+                                    ? { className: "restaurant-card unclickable-card" } 
+                                    : { to: `/restaurant/${restaurant.slug}`, className: "restaurant-card" };
+
+                                return (
+                                <CardComponent key={restaurant.id} {...cardProps as any}>
                                     <div className="restaurant-image-wrapper">
                                         <img
                                             src={getProxiedImageUrl(restaurant.imageFileUrl) || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80'}
                                             alt={restaurant.name}
-                                            className="restaurant-image"
+                                            className={`restaurant-image ${isUnClickable ? 'grayscale' : ''}`}
                                             loading="lazy"
                                         />
-                                        {!restaurant.isActive && <span className="closed-tag">Đóng cửa</span>}
+                                        {!restaurant.isActive && <span className="closed-tag">Tạm ngưng</span>}
                                         {restaurant.distance && <span className="distance-badge">{restaurant.distance.toFixed(1)} km</span>}
                                     </div>
                                     <div className="restaurant-info">
@@ -218,32 +251,23 @@ const Cuisines = () => {
                                                 <span className="rating-count">({restaurant.reviewCount || 0})</span>
                                             </div>
                                             {(() => {
-                                                const scheds = scheduleMap[restaurant.slug];
-                                                if (!scheds || scheds.length === 0) return null;
-                                                const now = new Date();
-                                                const dow = now.getDay() === 0 ? 7 : now.getDay();
-                                                const mins = now.getHours() * 60 + now.getMinutes();
-                                                const today = scheds.find(s => s.dayOfWeek === dow);
-                                                if (today) {
-                                                    const [oh, om] = today.openTime.split(':').map(Number);
-                                                    const [ch, cm] = today.closeTime.split(':').map(Number);
-                                                    const isOpen = mins >= oh * 60 + om && mins <= ch * 60 + cm;
-                                                    return (
-                                                        <>
-                                                            <span className="meta-separator">•</span>
-                                                            <span className={`restaurant-status-tag ${isOpen ? 'open' : 'closed'}`}>
-                                                                <span className="status-indicator"></span>
-                                                                {isOpen ? 'Đang mở' : 'Đóng cửa'}
-                                                            </span>
-                                                        </>
-                                                    );
-                                                }
-                                                return (
+                                                if (pendingScheduleFetch) return null;
+                                                if (!scheds || scheds.length === 0) return (
                                                     <>
                                                         <span className="meta-separator">•</span>
                                                         <span className="restaurant-status-tag closed">
                                                             <span className="status-indicator"></span>
                                                             Nghỉ
+                                                        </span>
+                                                    </>
+                                                );
+                                                
+                                                return (
+                                                    <>
+                                                        <span className="meta-separator">•</span>
+                                                        <span className={`restaurant-status-tag ${isOpen ? 'open' : 'closed'}`}>
+                                                            <span className="status-indicator"></span>
+                                                            {isOpen ? 'Đang mở' : 'Đóng cửa'}
                                                         </span>
                                                     </>
                                                 );
@@ -256,8 +280,9 @@ const Cuisines = () => {
                                             )}
                                         </div>
                                     </div>
-                                </Link>
-                            ))
+                                </CardComponent>
+                                );
+                            })
                         )}
                     </div>
                 )}

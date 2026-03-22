@@ -201,6 +201,18 @@
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
+/* Disabled/Closed Card Styles */
+.restaurant-card.unclickable-card {
+    cursor: not-allowed;
+    opacity: 0.75;
+    background-color: #f9f9f9;
+}
+
+.restaurant-card.unclickable-card:hover {
+    transform: none;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
 .restaurant-image-wrapper {
     position: relative;
     padding-top: 60%;
@@ -218,8 +230,16 @@
     transition: transform 0.4s ease;
 }
 
+.restaurant-image.grayscale {
+    filter: grayscale(100%);
+}
+
 .restaurant-card:hover .restaurant-image {
     transform: scale(1.08);
+}
+
+.restaurant-card.unclickable-card:hover .restaurant-image {
+    transform: none;
 }
 
 .promo-tag {

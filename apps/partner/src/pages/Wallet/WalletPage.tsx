@@ -330,13 +330,16 @@ const WalletPage: React.FC = () => {
                             </svg>
                             <span className="card-brand">FastWallet</span>
                         </div>
-                        <div className="card-middle" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0' }}>
-                            <span className="card-number" style={{ fontSize: '1.2rem', letterSpacing: '4px', opacity: 0.9 }}>
-                                **** **** **** 8888
-                            </span>
+                        <div className="card-middle" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', margin: '16px 0', gap: '6px' }}>
+                            <div className="card-balance-label" style={{ fontSize: '0.85rem', opacity: 0.8 }}>
+                                Số dư khả dụng
+                            </div>
                             <div className="card-balance">
                                 {formatCurrency(balance)}
                             </div>
+                            <span className="card-number" style={{ fontSize: '1.1rem', letterSpacing: '3px', opacity: 0.9, marginTop: '4px', fontFamily: 'monospace' }}>
+                                **** **** **** 8888
+                            </span>
                         </div>
                         <div className="card-bottom">
                             <div className="card-holder">

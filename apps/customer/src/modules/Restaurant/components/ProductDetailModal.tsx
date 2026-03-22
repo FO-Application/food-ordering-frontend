@@ -238,7 +238,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
                             {/* Product Info */}
                             <div className="product-main-info">
                                 <h3>{fullProduct.name}</h3>
-                                <p className="product-main-price">{fullProduct.price.toLocaleString('vi-VN')} ₫</p>
+                                <div className="product-price-wrapper">
+                                    <p className="product-main-price">{fullProduct.price.toLocaleString('vi-VN')} ₫</p>
+                                    {fullProduct.originalPrice && fullProduct.originalPrice > fullProduct.price && (
+                                        <span className="product-original-price">{fullProduct.originalPrice.toLocaleString('vi-VN')} ₫</span>
+                                    )}
+                                </div>
                                 {fullProduct.description && (
                                     <p className="product-main-desc">{fullProduct.description}</p>
                                 )}

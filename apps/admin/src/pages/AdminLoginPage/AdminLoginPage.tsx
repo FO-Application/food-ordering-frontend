@@ -70,8 +70,11 @@ const AdminLoginPage: React.FC = () => {
                 password,
             });
 
-            if (response.data) {
+            if (response.data && response.data.result) {
                 console.log('[AdminLoginPage] Login successful:', response.data.message);
+                localStorage.setItem('token', response.data.result.accessToken);
+                // Also save role/user info if needed
+                localStorage.setItem('role', response.data.result.role);
                 navigate('/dashboard');
             }
         } catch (err: any) {
@@ -99,8 +102,10 @@ const AdminLoginPage: React.FC = () => {
                 token: firebaseIdToken,
             });
 
-            if (response.data) {
+            if (response.data && response.data.result) {
                 console.log('[AdminLoginPage] Backend authentication successful:', response.data.message);
+                localStorage.setItem('token', response.data.result.accessToken);
+                localStorage.setItem('role', response.data.result.role);
                 navigate('/dashboard');
             }
         } catch (err: any) {

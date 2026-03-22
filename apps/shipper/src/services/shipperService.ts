@@ -42,6 +42,12 @@ const shipperService = {
         return response.data;
     },
 
+    // Get Restaurant Info (for missing phone/address)
+    getRestaurantById: async (id: number) => {
+        const response = await api.get<any>(`/restaurant/${id}`);
+        return response.data;
+    },
+
     // Get Shipper Profile (Vehicle, Online Status)
     getShipperProfile: async () => {
         const response = await api.get<any>('/delivery/shippers/profile');

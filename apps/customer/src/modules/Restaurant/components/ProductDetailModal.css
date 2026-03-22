@@ -102,7 +102,21 @@
     font-weight: 700;
     font-size: 1.1rem;
     color: #00b14f;
+    margin-bottom: 0px;
+}
+
+.product-price-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 8px;
+}
+
+.product-original-price {
+    font-size: 0.95rem;
+    color: #999;
+    text-decoration: line-through;
+    font-weight: 500;
 }
 
 .product-main-desc {
